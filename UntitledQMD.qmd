@@ -1,0 +1,50 @@
+```{r load_patient_data, warning=FALSE, message=FALSE}
+
+library(data.table)
+library(readxl)
+
+# 설정
+raw_data_directory <- "raw_data"
+project_path <- getwd()
+raw_data_path <- file.path(project_path, raw_data_directory)
+
+# 패턴 설정
+pattern <- "Levothyroxine"
+excel_file_names <- list.files(raw_data_path, pattern = pattern)
+
+# 초기화
+file_data <- NULL
+
+# 파일 하나씩 읽기
+for (file_name in excel_file_names) {
+  file_path <- file.path(raw_data_path, file_name)  # 경로 수정
+  
+  # 파일 읽기 및 데이터 결합
+  temp <- read_excel(file_path) %>% as.data.table()
+  setnames(temp, old = colnames(temp)[4], new = "처방일자")
+  
+  # 데이터 확인 및 병합
+  print(paste("Rows in current file:", nrow(temp)))
+  file_data <- if (is.null(file_data)) {
+    temp  # 첫 파일인 경우 초기화
+  } else {
+    rbind(file_data, temp, use.names = TRUE, fill = TRUE)  # 병합
+  }
+}
+
+# 최종 데이터 확인
+print(paste("Total rows combined:", nrow(file_data)))
+
+# "처방일자"를 날짜 형식으로 변환
+file_data[, 처방일자 := as.Date(처방일자, format = "%Y-%m-%d")]
+
+# 연도별 데이터 개수 집계
+file_data[, 연도 := year(처방일자)]  # 연도 열 추가
+yearly_counts <- file_data[, .N, by = 연도]
+
+# 연도별 데이터 개수 출력
+print(yearly_counts)
+
+
+
+```

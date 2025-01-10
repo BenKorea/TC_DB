@@ -1,0 +1,11 @@
+_extensions/
+_freeze/
+.quarto/
+.RData
+.Rhistory
+.Rprofile
+.Rproj.user
+*.Rproj
+raw_data/
+renv/
+/.quarto/
