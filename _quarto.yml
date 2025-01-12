@@ -1,13 +1,13 @@
 project:
   type: website
+  output-dir: docs
 
 website:
-  title: "R441-TC_DB"
+  title: "RAI Thearpy"
   navbar:
     left:
       - href: index.qmd
         text: Home
-      - about.qmd
 
 format:
   html:
@@ -17,3 +17,5 @@ format:
 
 editor: visual
 
+execute:
+  freeze: auto  # re-render only when source changes
