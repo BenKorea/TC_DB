@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  title: "RAI Thearpy"
+  title: "RAI"
   navbar:
     left:
       - href: index.qmd

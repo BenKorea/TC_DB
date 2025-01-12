@@ -4,7 +4,6 @@ author: 김병일
 description: "이 글에서 언급하는 방사성요오드 치료자료를 어떻게 만들었는지에 대한 설명"
 date: "2025-01-11"
 date-modified: "`r Sys.Date()`"
-
 ---
 
 ```{r library, echo=FALSE, message=FALSE}
@@ -14,7 +13,6 @@ library(readxl)
 library(dplyr)
 
 ```
-
 
 ```{r sourcing, echo=FALSE, message=FALSE}
 
@@ -51,13 +49,13 @@ c73_op_data <- c73_data[!is.na(최초진단일) |!is.na(수술일) | !is.na(갑�
 ```
 
 ### C73 수술정보
-- 저자는 MS Access를 이용하여 방사성요오드 치료에 대한 데이터베이스를 구축하였었다. 이 자료 중에는 `갑상선암 정보`라는 환자정보에 해당하는 테이블이 있었다.
-- 등록번호가 5자리 미만이거나 8자리 초과는 오류이므로 삭제한 후 정리해보면
-- 수술일을 기준으로 `r min(c73_data$수술일, na.rm=TRUE)`부터 `r max(c73_data$수술일, na.rm=TRUE)` 까지의 `r nrow(c73_data)` 명의 갑상선암 상병명을 가진 환자들의 수술 정보들이 입력되어 있다.
-- 최초진단일 입력건수는 `r sum(!is.na(c73_data$최초진단일))` 이었고, 수술일 입력건수는 `r sum(!is.na(c73_data$수술일))`,  둘 중 하나라도 입력된 건수는 `r sum(!is.na(c73_data$최초진단일) | !is.na(c73_data$수술일))`이었다.
-- 갑상선제거방법 입력건수는 `r sum(!is.na(c73_data$갑상선제거방법))`이었다.
-- 최초진단일만 입력된 경우가 상당수이긴 하지만 후술하는 치료가 된 환자들의 수술정보가 얼마나 매칭되는지가 관심이므로 일단락한다.
 
+-   저자는 MS Access를 이용하여 방사성요오드 치료에 대한 데이터베이스를 구축하였었다. 이 자료 중에는 `갑상선암 정보`라는 환자정보에 해당하는 테이블이 있었다.
+-   등록번호가 5자리 미만이거나 8자리 초과는 오류이므로 삭제한 후 정리해보면
+-   수술일을 기준으로 `r min(c73_data$수술일, na.rm=TRUE)`부터 `r max(c73_data$수술일, na.rm=TRUE)` 까지의 `r nrow(c73_data)` 명의 갑상선암 상병명을 가진 환자들의 수술 정보들이 입력되어 있다.
+-   최초진단일 입력건수는 `r sum(!is.na(c73_data$최초진단일))` 이었고, 수술일 입력건수는 `r sum(!is.na(c73_data$수술일))`, 둘 중 하나라도 입력된 건수는 `r sum(!is.na(c73_data$최초진단일) | !is.na(c73_data$수술일))`이었다.
+-   갑상선제거방법 입력건수는 `r sum(!is.na(c73_data$갑상선제거방법))`이었다.
+-   최초진단일만 입력된 경우가 상당수이긴 하지만 후술하는 치료가 된 환자들의 수술정보가 얼마나 매칭되는지가 관심이므로 일단락한다.
 
 ```{r patient, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -82,8 +80,6 @@ patient_data <- select(merged_data, -PtName, -ICDcode)
 rm(c73_data,c73_raw_data,merged_data, patient_raw_data)
 
 ```
-
-
 
 ```{r tx_data, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -117,8 +113,9 @@ acess_tx_not_refer_patient_data <- acess_tx_patient_data %>% filter (refer==0)
 ```
 
 ### I-131 치료 정보
-- `I-131 치료 정보` 테이블에 기입된 격리치료병실에 입실했던 환자들의 정보는 `r min(access_tx_data$투여일, na.rm=TRUE)`부터 `r max(access_tx_data$투여일, na.rm=TRUE)`까지 총 `r nrow(access_tx_data)` 회의 치료가 입력되어 있었다.
-- 수탁이 아닌경우의 환자수는 `r nrow(acess_tx_not_refer_patient_data)`였다.
+
+-   `I-131 치료 정보` 테이블에 기입된 격리치료병실에 입실했던 환자들의 정보는 `r min(access_tx_data$투여일, na.rm=TRUE)`부터 `r max(access_tx_data$투여일, na.rm=TRUE)`까지 총 `r nrow(access_tx_data)` 회의 치료가 입력되어 있었다.
+-   수탁이 아닌경우의 환자수는 `r nrow(acess_tx_not_refer_patient_data)`였다.
 
 ```{r gamma_data, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -152,8 +149,9 @@ tx_data <-bind_rows(access_tx_data,gamma_data)
 ## OCR 정보
 
 ### I-131 치료스캔 정보
-- 앞서의 I-131 치료 정보는 2014-04-09까지 만이므로 그 이후의 자료를 보충하기 위해 판독 중치료스캔에 대한 정보를 수집하였다. 2014년부터의 판독조회자료를 다운로드한 후 항목코드 D43018 또는 HD074이면서 처방일이 2014-04-09 이후를 선별하였다.
-- `r min(gamma_data$투여일, na.rm=TRUE)`부터 `r max(gamma_data$투여일, na.rm=TRUE)`까지 총 `r nrow(gamma_data)` 회의 치료가 입력되어 있었다.
+
+-   앞서의 I-131 치료 정보는 2014-04-09까지 만이므로 그 이후의 자료를 보충하기 위해 판독 중치료스캔에 대한 정보를 수집하였다. 2014년부터의 판독조회자료를 다운로드한 후 항목코드 D43018 또는 HD074이면서 처방일이 2014-04-09 이후를 선별하였다.
+-   `r min(gamma_data$투여일, na.rm=TRUE)`부터 `r max(gamma_data$투여일, na.rm=TRUE)`까지 총 `r nrow(gamma_data)` 회의 치료가 입력되어 있었다.
 
 ```{r tx_number, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -175,8 +173,8 @@ tx_patient_data <- revised_tx_data %>%
 
 ```
 
--   Access와 OCR 기원의 치료정보를 합쳤고, 총치료횟수는 `r nrow(revised_tx_data)`였다. 
-
+-   Access와 OCR 기원의 치료정보를 합쳤고, 총치료횟수는 `r nrow(revised_tx_data)`였다.
+-   환자수는 `r nrow(tx_patient_data)` 였다.
 
 ```{r t4_data, echo=FALSE}
 
@@ -202,9 +200,7 @@ t4_data <- t4_backup<-t4_data %>%
 setnames(t4_data, old = "등록번호", new = "PtID")
 ```
 
-
-
-```{r tx_data_merge}
+```{r tx_data_merge, echo=FALSE}
 
 tx_patient_data <- merge(tx_patient_data, t4_data, by = "PtID", all.x = TRUE)
 
@@ -217,8 +213,10 @@ tx_patient_data$refer <- ifelse(
 
 refer_na_after<-tx_patient_data %>% filter (is.na(refer))
 
-tx_patient_followup_data <- tx_patient_data %>% filter(!is.na(last_t4))
-tx_patient_no_followup_data <- tx_patient_data %>% filter(is.na(last_t4))
+tx_refer<-tx_patient_data %>% filter(as.numeric(refer)>0)
+tx_no_refer<-tx_patient_data %>% filter(as.numeric(refer)==0|is.na(refer))
+tx_no_refer_followup <- tx_no_refer %>% filter(!is.na(last_t4))
+tx_no_refer_no_followup <- tx_no_refer %>% filter(is.na(last_t4))
 ```
 
 ### Levothyroxine 처방통계
@@ -226,9 +224,10 @@ tx_patient_no_followup_data <- tx_patient_data %>% filter(is.na(last_t4))
 -   약품별 처방통계를 사용
 -   tx_patient_data의 followupdate 결정에 사용
 -   처방기간은 `r min(t4_data$first_t4, na.rm=TRUE)`부터 `r max(t4_data$last_t4, na.rm=TRUE)`
--   t4_patient_data 환자들 `r nrow(t4_data)`중 처방이 된 환자의 비율은 `r nrow(tx_patient_followup_data)/nrow(tx_patient_data)` 였다.
--   2006년 이후에 치료기록은 있으나 T4 처방이 없는 환자들 `r nrow(tx_patient_no_followup_data)`을 모두 수탁환자라 추정하는 것은 타당해 보인다. 14-04-11 이후의 수탁환자들에 대한 추정을 해보면 `r nrow(tx_patient_followup_data)`
-    -   
+-   tx_patient_data 환자들은 `r nrow(tx_patient_data)`명이었고
+-   치료환자 중 (처방기록이 다운로드된) 2006년부터 T4 처방기록이 없는 `r nrow(last_t4_na_2006)`명은 수탁환자로 분류하였다. 
+-   치료환자 중 수탁치료의 기록이나 분류된 환자수는 `r nrow(tx_refer)`명이었고 이를 제외한 환자=본원롼자수는 `r nrow(tx_no_refer)`이었다.
+-   본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 `r nrow(tx_no_refer_followup)`명이었고, 처방기록이 없는 경우는 `r nrow(tx_no_refer_no_followup)`명이었는데, 후자는 2006년 이전의 수탁이나 기록이 없거나 2006년 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.
 
 ```{r end, echo=FALSE}
 

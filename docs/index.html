@@ -10,7 +10,7 @@
 <meta name="dcterms.date" content="2025-01-11">
 <meta name="description" content="이 글에서 언급하는 방사성요오드 치료자료를 어떻게 만들었는지에 대한 설명">
 
-<title>방사성요오드 치료 데이터베이스 – RAI Thearpy</title>
+<title>방사성요오드 치료 데이터베이스 – RAI</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,40 +22,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -116,7 +82,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">RAI Thearpy</span>
+    <span class="navbar-title">RAI</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -192,7 +158,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">January 12, 2025</p>
+      <p class="date-modified">January 13, 2025</p>
     </div>
   </div>
     
@@ -234,31 +200,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <ul>
 <li>Access와 OCR 기원의 치료정보를 합쳤고, 총치료횟수는 11244였다.</li>
+<li>환자수는 8386 였다.</li>
 </ul>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>tx_patient_data <span class="ot">&lt;-</span> <span class="fu">merge</span>(tx_patient_data, t4_data, <span class="at">by =</span> <span class="st">"PtID"</span>, <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>refer_na_before<span class="ot">&lt;-</span>tx_patient_data <span class="sc">%&gt;%</span> <span class="fu">filter</span> (<span class="fu">is.na</span>(refer))</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>last_t4_na_2006<span class="ot">&lt;-</span>tx_patient_data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">as.Date</span>(tx_patient_data<span class="sc">$</span>last) <span class="sc">&gt;</span> <span class="fu">as.Date</span>(<span class="st">"2005-12-31"</span>) <span class="sc">&amp;</span> <span class="fu">is.na</span>(tx_patient_data<span class="sc">$</span>last_t4))</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>tx_patient_data<span class="sc">$</span>refer <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.Date</span>(tx_patient_data<span class="sc">$</span>last) <span class="sc">&gt;</span> <span class="fu">as.Date</span>(<span class="st">"2005-12-31"</span>) <span class="sc">&amp;</span> <span class="fu">is.na</span>(tx_patient_data<span class="sc">$</span>last_t4), <span class="st">"1"</span>, tx_patient_data<span class="sc">$</span>refer)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>refer_na_after<span class="ot">&lt;-</span>tx_patient_data <span class="sc">%&gt;%</span> <span class="fu">filter</span> (<span class="fu">is.na</span>(refer))</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>tx_patient_followup_data <span class="ot">&lt;-</span> tx_patient_data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(last_t4))</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>tx_patient_no_followup_data <span class="ot">&lt;-</span> tx_patient_data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(last_t4))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 </section>
 <section id="levothyroxine-처방통계" class="level3">
-<h3 class="anchored">Levothyroxine 처방통계</h3>
+<h3 class="anchored" data-anchor-id="levothyroxine-처방통계">Levothyroxine 처방통계</h3>
 <ul>
 <li>약품별 처방통계를 사용</li>
 <li>tx_patient_data의 followupdate 결정에 사용</li>
 <li>처방기간은 2006-01-02부터 2024-12-31</li>
-<li>t4_patient_data 환자들 8720중 처방이 된 환자의 비율은 0.8092058 였다.</li>
-<li><h2 id="년-이후에-치료기록은-있으나-t4-처방이-없는-환자들-1600을-모두-수탁환자라-추정하는-것은-타당해-보인다.-14-04-11-이후의-수탁환자들에-대한-추정을-해보면-6786" class="anchored" data-anchor-id="levothyroxine-처방통계">2006년 이후에 치료기록은 있으나 T4 처방이 없는 환자들 1600을 모두 수탁환자라 추정하는 것은 타당해 보인다. 14-04-11 이후의 수탁환자들에 대한 추정을 해보면 6786</h2></li>
+<li>tx_patient_data 환자들은 8386명이었고</li>
+<li>치료환자 중 (처방기록이 다운로드된) 2006년부터 T4 처방기록이 없는 248명은 수탁환자로 분류하였다.</li>
+<li>치료환자 중 수탁치료의 기록이나 분류된 환자수는 2212명이었고 이를 제외한 환자=본원롼자수는 6174이었다.</li>
+<li>본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 5249명이었고, 처방기록이 없는 경우는 925명이었는데, 후자는 2006년 이전의 수탁이나 기록이 없거나 2006년 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.</li>
 </ul>
 
 
