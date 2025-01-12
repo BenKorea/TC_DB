@@ -204,14 +204,14 @@ setnames(t4_data, old = "등록번호", new = "PtID")
 
 tx_patient_data <- merge(tx_patient_data, t4_data, by = "PtID", all.x = TRUE)
 
-refer_na_before<-tx_patient_data %>% filter (is.na(refer))
-
 last_t4_na_2006<-tx_patient_data %>% filter(as.Date(tx_patient_data$last) > as.Date("2005-12-31") & is.na(tx_patient_data$last_t4))
 
 tx_patient_data$refer <- ifelse(
   as.Date(tx_patient_data$last) > as.Date("2005-12-31") & is.na(tx_patient_data$last_t4), "1", tx_patient_data$refer)
 
-refer_na_after<-tx_patient_data %>% filter (is.na(refer))
+tx_1_t4_1<-tx_patient_data %>% filter(count==1&count_t4==1)
+
+tx_patient_data$refer <- ifelse((tx_patient_data$count==1&tx_patient_data$count_t4==1),"1",tx_patient_data$refer)
 
 tx_refer<-tx_patient_data %>% filter(as.numeric(refer)>0)
 tx_no_refer<-tx_patient_data %>% filter(as.numeric(refer)==0|is.na(refer))
@@ -225,8 +225,9 @@ tx_no_refer_no_followup <- tx_no_refer %>% filter(is.na(last_t4))
 -   tx_patient_data의 followupdate 결정에 사용
 -   처방기간은 `r min(t4_data$first_t4, na.rm=TRUE)`부터 `r max(t4_data$last_t4, na.rm=TRUE)`
 -   tx_patient_data 환자들은 `r nrow(tx_patient_data)`명이었고
--   치료환자 중 (처방기록이 다운로드된) 2006년부터 T4 처방기록이 없는 `r nrow(last_t4_na_2006)`명은 수탁환자로 분류하였다. 
--   치료환자 중 수탁치료의 기록이나 분류된 환자수는 `r nrow(tx_refer)`명이었고 이를 제외한 환자=본원롼자수는 `r nrow(tx_no_refer)`이었다.
+-   치료환자 중 (처방기록이 다운로드된) 2006년부터 T4 처방기록이 없는 `r nrow(last_t4_na_2006)`명은 수탁환자로 분류하였다.
+-   치료환자 중 치료기록이 1회이면서 처방기록도 1회인 `r nrow(tx_1_t4_1)`경우는 수탁환자로 분류하였다.
+-   치료환자 중 수탁치료의 기록이나 분류된 환자수는 `r nrow(tx_refer)`명이었고 이를 제외한 환자=본원환자수는 `r nrow(tx_no_refer)`이었다.
 -   본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 `r nrow(tx_no_refer_followup)`명이었고, 처방기록이 없는 경우는 `r nrow(tx_no_refer_no_followup)`명이었는데, 후자는 2006년 이전의 수탁이나 기록이 없거나 2006년 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.
 
 ```{r end, echo=FALSE}
