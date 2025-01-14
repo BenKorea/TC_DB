@@ -1,37 +1,271 @@
 ---
 title: 방사성요오드 치료 데이터베이스
 author: 김병일
-description: "이 글에서 언급하는 방사성요오드 치료자료를 어떻게 만들었는지에 대한 설명"
+description: "데이터베이스를 만드는 과정 설명"
 date: "2025-01-11"
 date-modified: "`r Sys.Date()`"
 ---
 
+```{r mode, echo=FALSE, warning=FALSE, message=FALSE}
+
+# manuscript에 필요치 않은 코드 출력에 대한 환경변수 설정
+manusctipt_mode<-"N" 
+input_error_checking_mode<-"Y"
+
+```
+
 ```{r library, echo=FALSE, message=FALSE}
 
+# 이 프로젝트에 필요한 모든 라이브러리들은 한 곳에 모아서 여러번 로딩하지 않도록 함
 library(data.table)
 library(readxl)
 library(dplyr)
-
+library(stringr)
 ```
 
 ```{r sourcing, echo=FALSE, message=FALSE}
 
+# 지정한 source 폴더의 모든 *.R을 sourcing하도록 함
 load_source_files <- function (source_folder) {
 
   project_path <<- getwd()
   source_path <- file.path(project_path, source_folder)
   r_files <- list.files(source_path, pattern = "\\.R$", full.names = TRUE)
   invisible(lapply(r_files, source))
-
 }
 
 load_source_files("source")
+```
+
+## Access 데이터베이스
+
+```{r access_tx, echo=FALSE, message=FALSE, warning=FALSE}
+
+access_list <- my_read_excel("raw_data/Tx_data","I-131 치료 정보.xlsx",                my_define_col_types(total=17,date=4,numeric=c(5,6)))
+
+access_tx <-access_list$valid_data
+access_tx_invalid <-access_list$invalid_data
+# PtID 오류 수정
+access_tx[, PtID := gsub("06-", "00789437", PtID)]
+access_tx <- access_tx[!is.na(PtID)]
+
+# 필요한 변수만 선택
+access_tx <- select(access_tx, PtID, 환자이름, 치료종류, 투여일, 용량, 회차, 담당과장,수탁병원)
+
+# 수탁병원기록이 없거나 "ㅡ"면 refer에 0을 파생
+access_tx$refer <-ifelse(is.na(access_tx$수탁병원)|access_tx$수탁병원=="ㅡ",0,1) 
+
+# 환자단위로 요약
+acess_tx_patient <- access_tx %>%
+  group_by(PtID, 환자이름) %>%
+  summarise(
+    first = min(투여일),
+    last = max(투여일),
+    cumulative_dose = sum(용량),
+    count = n(),
+    refer = sum(refer),
+    .groups = "drop"
+  )
+
+# 본원환자
+acess_tx_patient_our<-acess_tx_patient %>% filter(refer==0)
+acess_tx_patient_refer<-acess_tx_patient %>% filter(refer>0)
+```
+
+### I-131 치료 정보
+
+-   `I-131 치료 정보` 테이블에
+    -   `r min(access_tx$투여일, na.rm=TRUE)`부터 `r max(access_tx$투여일, na.rm=TRUE)`까지
+    -   `r nrow(access_tx)`회의 핵의학치료가 입력되어 있었으며,
+    -   환자를 기준으로 하면 `r nrow(acess_tx_patient)`명이었고, 입력된 수탁정보를 기준으로
+        -   본원환자는 `r nrow(acess_tx_patient_our)`명
+        -   수탁환자는 `r nrow(acess_tx_patient_refer)`명이었다.
+
+```{r gamma_tx, echo=FALSE, message=FALSE, warning=FALSE}
+
+gamma_raw<- my_read_excel_list("raw_data/Gamma_data","Gamma")
+
+gamma_tx <- gamma_raw %>% filter(진료과명 == "핵의학과" & 항목코드 %in% c("D43018", "HD074"))
+
+gamma_tx$처방일 <- as.Date(gamma_tx$처방일, format = "%Y%m%d")
+gamma_tx$접수일시 <- as.Date(gamma_tx$접수일시, format = "%Y%m%d")
+gamma_tx$실시일시 <- as.Date(gamma_tx$실시일시, format = "%Y%m%d")
+gamma_tx$판독일시 <- as.Date(gamma_tx$판독일시, format = "%Y%m%d")
+gamma_tx$보고일시 <- as.Date(gamma_tx$보고일시, format = "%Y%m%d")
+gamma_tx$보고수정일시 <- as.Date(gamma_tx$보고수정일시, format = "%Y%m%d")
+
+gamma_tx <- gamma_tx %>% filter(처방일 > "2014-04-09") %>% select (PtID, 성명,처방일)
+setnames(gamma_tx, old = c("성명", "처방일"), new = c("환자이름", "투여일"))
+
+gamma_tx_patient <- gamma_tx %>%
+  group_by(PtID, 환자이름) %>%
+  summarise(
+    first = min(투여일),
+    last = max(투여일),
+    count = n(),
+    .groups = "drop"
+  )
+```
+
+## OCR 다운로드
+
+### I-131 치료스캔 정보
+
+-   `r max(access_tx$투여일, na.rm=TRUE)`이후는 핵의학영상검사판독 중 치료스캔 정보를 수집
+-   2014년부터의 판독조회자료를 다운로드 후 항목코드 D43018 또는 HD074이면서 처방일이 `r max(access_tx$투여일, na.rm=TRUE)`이후를 선별
+    -   `r min(gamma_tx$투여일, na.rm=TRUE)`부터 `r max(gamma_tx$투여일, na.rm=TRUE)`까지 총 `r nrow(gamma_tx)` 회의 치료가 있었으며
+    -   환자는 `r nrow(gamma_tx_patient)`명 이었다.
+
+```{r tx_count, echo=FALSE, message=FALSE, warning=FALSE}
+
+tx_data <-bind_rows(access_tx,gamma_tx)
+
+revised_tx_data <- copy(tx_data)
+
+# 회차가 NA인 경우 처리
+revised_tx_data[is.na(회차), 회차 := as.integer(frank(투여일, ties.method = "dense")), by = PtID]
+
+tx_patient_data <- revised_tx_data %>%
+  group_by(PtID, 환자이름) %>%
+  summarise(
+    first = as.Date(min(투여일)),
+    last = as.Date(max(투여일)),
+    count = n(),
+    refer = sum(refer),
+    .groups = "drop"
+  )
+
 
 ```
 
-## Access_data
+-   Access 데이터베이스의 치료정보와 OCR 다운로드된 치료스캔의 정보를 합쳤고,
+    -   총 치료횟수는 `r nrow(revised_tx_data)`였다.
+    -   총 환자수는 `r nrow(tx_patient_data)` 였다.
+
+```{r t4_data, echo=FALSE}
+
+raw_data_directory<-"raw_data/Prescription_data"
+project_path <<- getwd()
+raw_data_path <<- file.path(project_path, raw_data_directory)
+pattern <- "Levothyroxine_핵의학과"
+
+t4_data <- load_levothyroxine_data(raw_data_path, pattern)
+t4_data$처방일자 <-as.Date(t4_data$처방일자)
+t4_data$수량 <-as.numeric(t4_data$수량)
+
+t4_data <- t4_backup<-t4_data %>%
+  group_by(등록번호, 환자명) %>%
+  summarise(
+    first_t4 = min(처방일자),
+    last_t4 = max(처방일자),
+    total_t4 = sum(수량),
+    count_t4 = n(),
+    .groups = "drop"
+  )
+
+setnames(t4_data, old = "등록번호", new = "PtID")
+```
+
+```{r tx_data_merge, echo=FALSE}
+
+tx_patient_data <- merge(tx_patient_data, t4_data, by = "PtID", all.x = TRUE)
+
+################################################################################
+if (input_error_checking_mode=="Y") {
+  na_number_tx_patient_data_refer<-sum(is.na(tx_patient_data$refer))
+  other_number_tx_patient_data_refer<-table(tx_patient_data$refer)
+}
+################################################################################
+
+last_t4_na_20000711<-tx_patient_data %>% filter(as.Date(tx_patient_data$last) > as.Date("2000-07-11") & is.na(tx_patient_data$last_t4))
+
+################################################################################
+if (input_error_checking_mode=="Y") {
+  na_number_last_t4_na_20000711_refer<-sum(is.na(last_t4_na_20000711$refer))
+  other_number_last_t4_na_20000711_refer<-table(last_t4_na_20000711$refer)
+}
+################################################################################
+
+tx_patient_data$refer <- ifelse(
+  as.Date(tx_patient_data$last) > as.Date("2000-07-11") & is.na(tx_patient_data$last_t4), "1", tx_patient_data$refer)
+
+################################################################################
+if (input_error_checking_mode=="Y") {
+  na_number_tx_patient_data_refer2<-sum(is.na(tx_patient_data$refer))
+  other_number_tx_patient_data_refer2<-table(tx_patient_data$refer)
+}
+################################################################################
+
+tx_1_t4_1<-tx_patient_data %>% filter(count==1&count_t4==1)
+
+################################################################################
+if (input_error_checking_mode=="Y") {
+  na_number_tx_1_t4_1_refer<-sum(is.na(tx_1_t4_1$refer))
+  other_number_tx_1_t4_1_refer<-table(tx_1_t4_1$refer)
+}
+################################################################################
+
+tx_patient_data$refer <- ifelse((tx_patient_data$count==1&tx_patient_data$count_t4==1),"1",tx_patient_data$refer)
+
+################################################################################
+if (input_error_checking_mode=="Y") {
+  na_number_tx_patient_data_refer3<-sum(is.na(tx_patient_data$refer))
+  other_number_tx_patient_data_refer3<-table(tx_patient_data$refer)
+}
+################################################################################
+
+tx_refer<-tx_patient_data %>% filter(as.numeric(refer)>0)
+tx_no_refer<-tx_patient_data %>% filter(as.numeric(refer)==0|is.na(refer))
+tx_no_refer_followup <- tx_no_refer %>% filter(!is.na(last_t4))
+tx_no_refer_no_followup <- tx_no_refer %>% filter(is.na(last_t4))
+```
+
+### Levothyroxine 처방통계
+
+-   약품별 처방통계로부터 다운로드하여 followupdate 결정에 사용
+-   (다운로드 가능했던) 처방기간은 `r min(t4_data$first_t4, na.rm=TRUE)`부터 `r max(t4_data$last_t4, na.rm=TRUE)`
+-   tx_patient_data 환자들은 `r nrow(tx_patient_data)`명이었고
+-   치료환자 중 `r min(t4_data$first_t4, na.rm=TRUE)` 이후의 T4 처방기록이 없는 `r nrow(last_t4_na_20000711)`명은 수탁환자로 분류하였다.
+-   치료기록이 1회이면서 처방기록도 1회인 `r nrow(tx_1_t4_1)`경우도 수탁환자로 분류하였다.
+-   수탁으로 분류된 환자수는 `r nrow(tx_refer)`명이었고 이를 제외한 환자=본원환자수는 `r nrow(tx_no_refer)`이었다.
+    -   본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 `r nrow(tx_no_refer_followup)`명이었고,
+    -   처방기록이 없는 경우는 `r nrow(tx_no_refer_no_followup)`명이었는데, 후자는 2000년 7월 11일 이전의 수탁이나 기록이 없거나 2000년 7월 11일 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.
+
+## 저자의 환자
+-   예후/추척관찰 정보는 저자의 외래환자들에 대해 EMR 관심환자에 입력되어 있다.
+-   이는 핵의학 전체환자로 확장하기 전에 pilot 성격을 가진다.
+
+```{r raw_data, echo=FALSE, warning=FALSE, message=FALSE}
+
+raw_data<- my_read_excel_list("raw_data","관심환자")
+raw_data <- raw_data[, .(등록일, PtID, 성별, 나이, 특기사항, 분류명)]
+raw_data$등록일<- as.Date(raw_data$등록일)
+```
+
+```{r birthday_data, echo=FALSE, warning=FALSE, message=FALSE}
+
+# 나이에 있는 "세"를 제거하고 정수형으로 변환
+raw_data$나이 <- as.integer(sub("세", "", raw_data$나이))
+birthday_data <- my_parsing_birthday_data (raw_data)
+```
+
+```{r risk_data, echo=FALSE, warning=FALSE, message=FALSE}
+
+risk_data <- my_parsing_risk_data (raw_data)
+```
+
+```{r response_data, echo=FALSE, warning=FALSE, message=FALSE}
+
+response_data <- my_parsing_response_data (raw_data)
+```
+
+
+```{r end, echo=FALSE}
+
+```
 
 ```{r c73, echo=FALSE}
+#| include: false
 
 directory<-"raw_data/Tx_data"
 file_name<-"갑상선암 정보.xlsx"
@@ -44,7 +278,6 @@ c73_data <- c73_raw_data[, lapply(.SD, function(col) if (!all(is.na(col))) col),
 c73_data<-my_PtID(c73_data)
 c73_data[, 수술과최초진단일일치 := !is.na(수술일) & !is.na(최초진단일) & (수술일 == 최초진단일)]
 c73_op_data <- c73_data[!is.na(최초진단일) |!is.na(수술일) | !is.na(갑상선제거방법)]
-
 
 ```
 
@@ -78,158 +311,5 @@ merged_data <- merge(c73_data, patient_data, by = "PtID", all.x = TRUE)
 patient_data <- select(merged_data, -PtName, -ICDcode)
 
 rm(c73_data,c73_raw_data,merged_data, patient_raw_data)
-
-```
-
-```{r tx_data, echo=FALSE, message=FALSE, warning=FALSE}
-
-directory<-"raw_data/Tx_data"
-file_name<-"I-131 치료 정보.xlsx"
-file_path<-file.path(project_path,directory,file_name)
-col_types <- rep("text", 17)
-col_types[c(4)]<-"date"
-col_types[c(5,6)]<-"numeric"
-
-access_tx_data <- as.data.table(read_xlsx(file_path, col_types = col_types))
-access_tx_data <-my_PtID(access_tx_data)
-# PtID 오류 수정
-access_tx_data[, PtID := gsub("06-", "00789437", PtID)]
-access_tx_data <- access_tx_data[!is.na(PtID)]
-access_tx_data <- select(access_tx_data, PtID, 환자이름, 치료종류, 투여일, 용량, 회차, 담당과장,수탁병원)
-access_tx_data$refer <-ifelse(is.na(access_tx_data$수탁병원),0,1) 
-
-acess_tx_patient_data <- access_tx_data %>%
-  group_by(PtID, 환자이름) %>%
-  summarise(
-    first = min(투여일),
-    last = max(투여일),
-    cumulative_dose = sum(용량),
-    count = n(),
-    refer = sum(refer),
-    .groups = "drop"
-  )
-
-acess_tx_not_refer_patient_data <- acess_tx_patient_data %>% filter (refer==0)
-```
-
-### I-131 치료 정보
-
--   `I-131 치료 정보` 테이블에 기입된 격리치료병실에 입실했던 환자들의 정보는 `r min(access_tx_data$투여일, na.rm=TRUE)`부터 `r max(access_tx_data$투여일, na.rm=TRUE)`까지 총 `r nrow(access_tx_data)` 회의 치료가 입력되어 있었다.
--   수탁이 아닌경우의 환자수는 `r nrow(acess_tx_not_refer_patient_data)`였다.
-
-```{r gamma_data, echo=FALSE, message=FALSE, warning=FALSE}
-
-directory<-"raw_data/Gamma_data"
-pattern<-"Gamma"
-folder_path<-file.path(project_path,directory)
-excel_file_names <- list.files(folder_path, pattern = pattern, full.names = TRUE)
-
-data_list <- lapply(excel_file_names, function(file) {
-    as.data.table(read_xls(file, col_types = "text"))
-})
-  
-gamma_data <-gamma_raw<- rbindlist(data_list, use.names = TRUE, fill = TRUE)
-
-# gamma_data <- my_read_excels("raw_data/Gamma_data", "Gamma")
-gamma_data <- gamma_data %>% 
-  filter(진료과명 == "핵의학과" & 항목코드 %in% c("D43018", "HD074"))
-gamma_data$처방일 <- as.Date(gamma_data$처방일, format = "%Y%m%d")
-gamma_data$접수일시 <- as.Date(gamma_data$접수일시, format = "%Y%m%d")
-gamma_data$실시일시 <- as.Date(gamma_data$실시일시, format = "%Y%m%d")
-gamma_data$판독일시 <- as.Date(gamma_data$판독일시, format = "%Y%m%d")
-gamma_data$보고일시 <- as.Date(gamma_data$보고일시, format = "%Y%m%d")
-gamma_data$보고수정일시 <- as.Date(gamma_data$보고수정일시, format = "%Y%m%d")
-
-gamma_data <- gamma_data %>% filter(처방일 > "2014-04-09") %>% my_PtID %>% select (PtID, 성명,처방일)
-setnames(gamma_data, old = c("성명", "처방일"), new = c("환자이름", "투여일"))
-tx_data <-bind_rows(access_tx_data,gamma_data)
-
-```
-
-## OCR 정보
-
-### I-131 치료스캔 정보
-
--   앞서의 I-131 치료 정보는 2014-04-09까지 만이므로 그 이후의 자료를 보충하기 위해 판독 중치료스캔에 대한 정보를 수집하였다. 2014년부터의 판독조회자료를 다운로드한 후 항목코드 D43018 또는 HD074이면서 처방일이 2014-04-09 이후를 선별하였다.
--   `r min(gamma_data$투여일, na.rm=TRUE)`부터 `r max(gamma_data$투여일, na.rm=TRUE)`까지 총 `r nrow(gamma_data)` 회의 치료가 입력되어 있었다.
-
-```{r tx_number, echo=FALSE, message=FALSE, warning=FALSE}
-
-revised_tx_data <- copy(tx_data)
-
-# 회차가 NA인 경우 처리
-revised_tx_data[is.na(회차), 회차 := as.integer(frank(투여일, ties.method = "dense")), by = PtID]
-
-tx_patient_data <- revised_tx_data %>%
-  group_by(PtID, 환자이름) %>%
-  summarise(
-    first = as.Date(min(투여일)),
-    last = as.Date(max(투여일)),
-    count = n(),
-    refer = sum(refer),
-    .groups = "drop"
-  )
-
-
-```
-
--   Access와 OCR 기원의 치료정보를 합쳤고, 총치료횟수는 `r nrow(revised_tx_data)`였다.
--   환자수는 `r nrow(tx_patient_data)` 였다.
-
-```{r t4_data, echo=FALSE}
-
-raw_data_directory<-"raw_data/Prescription_data"
-project_path <<- getwd()
-raw_data_path <<- file.path(project_path, raw_data_directory)
-pattern <- "Levothyroxine_핵의학과"
-
-t4_data <- load_levothyroxine_data(raw_data_path, pattern)
-t4_data$처방일자 <-as.Date(t4_data$처방일자)
-t4_data$수량 <-as.numeric(t4_data$수량)
-
-t4_data <- t4_backup<-t4_data %>%
-  group_by(등록번호, 환자명) %>%
-  summarise(
-    first_t4 = min(처방일자),
-    last_t4 = max(처방일자),
-    total_t4 = sum(수량),
-    count_t4 = n(),
-    .groups = "drop"
-  )
-
-setnames(t4_data, old = "등록번호", new = "PtID")
-```
-
-```{r tx_data_merge, echo=FALSE}
-
-tx_patient_data <- merge(tx_patient_data, t4_data, by = "PtID", all.x = TRUE)
-
-last_t4_na_2006<-tx_patient_data %>% filter(as.Date(tx_patient_data$last) > as.Date("2005-12-31") & is.na(tx_patient_data$last_t4))
-
-tx_patient_data$refer <- ifelse(
-  as.Date(tx_patient_data$last) > as.Date("2005-12-31") & is.na(tx_patient_data$last_t4), "1", tx_patient_data$refer)
-
-tx_1_t4_1<-tx_patient_data %>% filter(count==1&count_t4==1)
-
-tx_patient_data$refer <- ifelse((tx_patient_data$count==1&tx_patient_data$count_t4==1),"1",tx_patient_data$refer)
-
-tx_refer<-tx_patient_data %>% filter(as.numeric(refer)>0)
-tx_no_refer<-tx_patient_data %>% filter(as.numeric(refer)==0|is.na(refer))
-tx_no_refer_followup <- tx_no_refer %>% filter(!is.na(last_t4))
-tx_no_refer_no_followup <- tx_no_refer %>% filter(is.na(last_t4))
-```
-
-### Levothyroxine 처방통계
-
--   약품별 처방통계를 사용
--   tx_patient_data의 followupdate 결정에 사용
--   처방기간은 `r min(t4_data$first_t4, na.rm=TRUE)`부터 `r max(t4_data$last_t4, na.rm=TRUE)`
--   tx_patient_data 환자들은 `r nrow(tx_patient_data)`명이었고
--   치료환자 중 (처방기록이 다운로드된) 2006년부터 T4 처방기록이 없는 `r nrow(last_t4_na_2006)`명은 수탁환자로 분류하였다.
--   치료환자 중 치료기록이 1회이면서 처방기록도 1회인 `r nrow(tx_1_t4_1)`경우는 수탁환자로 분류하였다.
--   치료환자 중 수탁치료의 기록이나 분류된 환자수는 `r nrow(tx_refer)`명이었고 이를 제외한 환자=본원환자수는 `r nrow(tx_no_refer)`이었다.
--   본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 `r nrow(tx_no_refer_followup)`명이었고, 처방기록이 없는 경우는 `r nrow(tx_no_refer_no_followup)`명이었는데, 후자는 2006년 이전의 수탁이나 기록이 없거나 2006년 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.
-
-```{r end, echo=FALSE}
 
 ```

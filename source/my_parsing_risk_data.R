@@ -1,67 +1,8 @@
 ################################################################################
-## my_functions_for_common_purpose
-################################################################################
-my_clean_string_edges <- function(str) {
-  
-  # 정규식 설명:
-  # ^\\s*          : 문자열의 시작과 0개 이상의 공백 문자
-  # (?:#1)?        : '#1' 패턴이 0번 또는 1번 나타나는 부분 (캡처를 하지 않는 그룹)
-  # [.,]?          : '.' 또는 ','가 0번 또는 1번 나타나는 부분
-  # \\s*           : 다시 0개 이상의 공백 문자
-  str <- sub("^\\s*(?:#1)?[.,]?\\s*", "", str)
-  str <- gsub("\\s+$", "", str)
-  
-  return(str)
-}
-
-
-################################################################################
-## my_functions_for_hash
-################################################################################
-my_deidentify_PatientID <- function(df, col_name) {
-  # 열을 정렬하고 고유한 값들을 추출합니다.
-  unique_values <- unique(df[[col_name]])
-  sorted_values <- sort(unique_values)
-  
-  # 고유한 값들에 대해 순서를 부여합니다.
-  value_to_index <- match(sorted_values, unique_values)
-  
-  # 해당 열을 고유한 값에 대응하는 숫자로 대체합니다.
-  df[[col_name]] <- as.character(value_to_index[match(df[[col_name]], unique_values)])
-  
-  return(df)
-}
-
-
-################################################################################
-## my_functions_for_birthday
-################################################################################
-my_parsing_birthday_data<-function(dt) {
- 
-  birthday_data <- dt[분류명 == "Birthday_Registration"]
-  birthday_data[, birthday := as.Date(특기사항, format="%Y-%m-%d")]
-  if (input_error_checking_mode == "Y") {
-    birthday_input_error <<- birthday_data[is.na(birthday), ]
-  }
-  birthday_data <- birthday_data[!is.na(birthday), ]
-  downloaded_date <- my_downloaded_date()
-  birthday_data[, 다운로드기준나이 := as.integer(difftime(downloaded_date, birthday, units = "weeks") / 52.25)]
-  birthday_data[, validation := 나이-다운로드기준나이]
-  if (input_error_checking_mode == "Y") {
-    birthday_data_validation_error <<- birthday_data[validation > 1 | validation < -1]
-  }
-  birthday_data <- birthday_data[!(validation > 1 | validation < -1)]
-  birthday_data <- birthday_data[, c('등록번호', '성별', 'birthday')]
-  return(birthday_data)
-  
-}
-
-
-################################################################################
 ## my_functions_for_risk
 ################################################################################
 my_splilt_lines_for_risk_data <- function(dt) {
-
+  
   dt[, line_count := str_count(특기사항, "\n") + 1]
   if (input_error_checking_mode == "Y") {
     risk_data_line_count_errors <<- dt[line_count >= 4 | line_count == 1]
@@ -116,12 +57,12 @@ my_parsing_cN_line <- function(dt) {
 }
 
 my_parsing_op_line <- function(dt) {
- 
+  
   # &를 기준으로 op_part와 completion 열을 분리합니다.
   dt[, c("op_part", "completion_part") := tstrsplit(op_line, "&", fixed = TRUE)]
   dt[, op_part := my_clean_string_edges(op_part)]
   dt[, completion_part := my_clean_string_edges(completion_part)]
-
+  
   dt[, c("op", "op_hosp") := tstrsplit(op_part, "@", fixed = TRUE)]
   dt[, op_part := my_clean_string_edges(op_part)]
   dt[, op_hosp := my_clean_string_edges(op_hosp)]
@@ -137,7 +78,7 @@ my_parsing_op_line <- function(dt) {
   dt$op_date <- ifelse(grepl("-\\?\\?", dt$op_date), gsub("-\\?\\?", "-06", dt$op_date), dt$op_date)
   dt[, op_date := as.Date(op_date, format="%Y-%m-%d", try = TRUE)]
   if (input_error_checking_mode == "Y") {
-  risk_data_op_date_error <<- dt[is.na(op_date)]
+    risk_data_op_date_error <<- dt[is.na(op_date)]
   }
   dt <- dt[!is.na(op_date)]
   
@@ -163,7 +104,7 @@ my_parsing_op_line <- function(dt) {
 }
 
 my_mutate_op_and_ND_type <- function(dt) {
-
+  
   dt$Thyroidectomy_Type <- "Others"
   dt$Thyroidectomy_Type[grepl("sub", dt$op_name, ignore.case = TRUE)|grepl("near", dt$op_name, ignore.case = TRUE)] <- "subTT"
   dt$Thyroidectomy_Type[!grepl("sub", dt$op_name, ignore.case = TRUE)&!grepl("near", dt$op_name, ignore.case = TRUE)&grepl("TT", dt$op_name, ignore.case = TRUE)] <- "TT"
@@ -189,7 +130,7 @@ my_mutate_op_and_ND_type <- function(dt) {
 }
 
 my_split_paracentesis_for_stage_line <- function(dt) {
-
+  
   # ")"를 기준으로 stage_line 열 분리
   dt$histology_part <- tstrsplit(dt$stage_line, "\\) ", fixed = FALSE, fill = NA, type.convert = TRUE)[[1]]
   dt$pT_part <- tstrsplit(dt$stage_line, "\\) ", fixed = FALSE, fill = NA, type.convert = TRUE)[[2]]
@@ -227,7 +168,7 @@ my_parsing_histology <- function(dt) {
   dt$highest_2nd_number <- gsub("x", "", dt$highest_2nd_number)
   dt$highest_2nd_number <- gsub(")", "", dt$highest_2nd_number)
   
-    
+  
   dt$highest_3rd <- tstrsplit(dt$highest_stage_multiplicity, "\\s", fixed = FALSE, fill = NA, type.convert = TRUE)[[3]]
   dt$highest_3rd_location <- tstrsplit(dt$highest_3rd, "_", fixed = FALSE, fill = NA, type.convert = TRUE)[[1]]
   dt$highest_3rd_number <- tstrsplit(dt$highest_3rd, "_", fixed = FALSE, fill = NA, type.convert = TRUE)[[2]]
@@ -246,17 +187,17 @@ my_parsing_histology <- function(dt) {
   dt$subsequent_1st_location <- tstrsplit(dt$subsequent_1st, "_", fixed = FALSE, fill = NA, type.convert = TRUE)[[1]]
   dt$subsequent_1st_number <- tstrsplit(dt$subsequent_1st, "_", fixed = FALSE, fill = NA, type.convert = TRUE)[[2]]
   dt$subsequent_1st_number <- gsub("x", "", dt$subsequent_1st_number)
- 
+  
   dt$Multiplicity<- ifelse(dt$highest_1st_number=="1"&is.na(dt$highest_2nd_number)&is.na(dt$highest_3rd_number),"Single","Multiple")
   dt$Laterality<- ifelse(grepl("Rt",dt$highest_stage_histology_part, ignore.case = TRUE)&grepl("Lt",dt$highest_stage_histology_part, ignore.case = TRUE),"Bilateral","Unilateral")
   dt$Laterality<- ifelse(grepl("Rt",dt$highest_stage_histology_part, ignore.case = TRUE)&grepl("Lt",dt$subsequent_stage_histology_part, ignore.case = TRUE),"Bilateral",dt$Laterality)
   dt$Laterality<- ifelse(grepl("Lt",dt$highest_stage_histology_part, ignore.case = TRUE)&grepl("Rt",dt$subsequent_stage_histology_part, ignore.case = TRUE),"Bilateral",dt$Laterality)
   dt$Laterality<- ifelse(grepl("both",dt$highest_stage_histology_part, ignore.case = TRUE)|grepl("both",dt$subsequent_stage_histology_part, ignore.case = TRUE),"Bilateral",dt$Laterality)
-    
+  
   return(dt)
   
 }
-  
+
 my_parsing_pT <- function(dt) {  
   
   dt$pT <- tstrsplit(dt$pT_part, "\\(", fixed = FALSE, fill = NA, type.convert = TRUE)[[1]]
@@ -336,62 +277,3 @@ my_parsing_risk_data<-function(dt) {
   
   return(risk_data)
 }
-
-################################################################################
-## my_functions_for_response
-################################################################################
-my_parsing_response_line <- function(dt) {
-  
-  dt$response_date <- tstrsplit(dt$특기사항, "\\s+", fixed = FALSE, fill = NA, type.convert = TRUE)[[1]]
-
-  return(dt)
-}
-
-my_mutate_recur_date <- function(dt) {
-  
-  dt$Recur<- ifelse(dt$Response=="Structural","Y","N")
-
-  return(dt)
-}
-
-my_parsing_response_data<-function(dt) {
-  
-  response_data <- dt[분류명 %in% c("Excellent","Indeterminate","Biochemical","Structural")]
-  setnames(response_data, "분류명", "Response")
-  response_data[, 등록일 := as.Date(등록일, format="%Y-%m-%d")]
-  response_data <- my_parsing_response_line(response_data)
-  response_data <- my_mutate_recur_date(response_data)
-  
-  return(response_data)
-  
-}
-
-################################################################################
-## my_functions_for_followup
-################################################################################
-my_parsing_response_line <- function(dt) {
-  
-  dt$response_date <- tstrsplit(dt$특기사항, "\\s+", fixed = FALSE, fill = NA, type.convert = TRUE)[[1]]
-  
-  return(dt)
-}
-
-my_mutate_recur_date <- function(dt) {
-  
-  dt$Recur<- ifelse(dt$Response=="Structural","Y","N")
-  
-  return(dt)
-}
-
-my_parsing_followup_data<-function(dt) {
-  
-  followup_data <- dt[분류명 %in% c("Transfer","follow up loss","expire","요양병원","호스피스")]
-  setnames(followup_data, "분류명", "FollowUp")
-  followup_data[, 등록일 := as.Date(등록일, format="%Y-%m-%d")]
-
-  
-  return(followup_data)
-  
-}
-
-  

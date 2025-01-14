@@ -8,7 +8,7 @@
 
 <meta name="author" content="김병일">
 <meta name="dcterms.date" content="2025-01-11">
-<meta name="description" content="이 글에서 언급하는 방사성요오드 치료자료를 어떻게 만들었는지에 대한 설명">
+<meta name="description" content="데이터베이스를 만드는 과정 설명">
 
 <title>방사성요오드 치료 데이터베이스 – RAI</title>
 <style>
@@ -111,15 +111,18 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#access_data" id="toc-access_data" class="nav-link active" data-scroll-target="#access_data">Access_data</a>
+  <li><a href="#access-데이터베이스" id="toc-access-데이터베이스" class="nav-link active" data-scroll-target="#access-데이터베이스">Access 데이터베이스</a>
   <ul class="collapse">
-  <li><a href="#c73-수술정보" id="toc-c73-수술정보" class="nav-link" data-scroll-target="#c73-수술정보">C73 수술정보</a></li>
   <li><a href="#i-131-치료-정보" id="toc-i-131-치료-정보" class="nav-link" data-scroll-target="#i-131-치료-정보">I-131 치료 정보</a></li>
   </ul></li>
-  <li><a href="#ocr-정보" id="toc-ocr-정보" class="nav-link" data-scroll-target="#ocr-정보">OCR 정보</a>
+  <li><a href="#ocr-다운로드" id="toc-ocr-다운로드" class="nav-link" data-scroll-target="#ocr-다운로드">OCR 다운로드</a>
   <ul class="collapse">
   <li><a href="#i-131-치료스캔-정보" id="toc-i-131-치료스캔-정보" class="nav-link" data-scroll-target="#i-131-치료스캔-정보">I-131 치료스캔 정보</a></li>
   <li><a href="#levothyroxine-처방통계" id="toc-levothyroxine-처방통계" class="nav-link" data-scroll-target="#levothyroxine-처방통계">Levothyroxine 처방통계</a></li>
+  </ul></li>
+  <li><a href="#저자의-환자" id="toc-저자의-환자" class="nav-link" data-scroll-target="#저자의-환자">저자의 환자</a>
+  <ul class="collapse">
+  <li><a href="#c73-수술정보" id="toc-c73-수술정보" class="nav-link" data-scroll-target="#c73-수술정보">C73 수술정보</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -134,7 +137,7 @@ ul.task-list li input[type="checkbox"] {
 
 <div>
   <div class="description">
-    이 글에서 언급하는 방사성요오드 치료자료를 어떻게 만들었는지에 대한 설명
+    데이터베이스를 만드는 과정 설명
   </div>
 </div>
 
@@ -158,7 +161,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">January 13, 2025</p>
+      <p class="date-modified">January 14, 2025</p>
     </div>
   </div>
     
@@ -169,8 +172,66 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="access_data" class="level2">
-<h2 class="anchored" data-anchor-id="access_data">Access_data</h2>
+<section id="access-데이터베이스" class="level2">
+<h2 class="anchored" data-anchor-id="access-데이터베이스">Access 데이터베이스</h2>
+<section id="i-131-치료-정보" class="level3">
+<h3 class="anchored" data-anchor-id="i-131-치료-정보">I-131 치료 정보</h3>
+<ul>
+<li><code>I-131 치료 정보</code> 테이블에
+<ul>
+<li>1988-04-26부터 2014-04-09까지</li>
+<li>9549회의 핵의학치료가 입력되어 있었으며,</li>
+<li>환자를 기준으로 하면 7088명이었고, 입력된 수탁정보를 기준으로
+<ul>
+<li>본원환자는 5031명</li>
+<li>수탁환자는 2057명이었다.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="ocr-다운로드" class="level2">
+<h2 class="anchored" data-anchor-id="ocr-다운로드">OCR 다운로드</h2>
+<section id="i-131-치료스캔-정보" class="level3">
+<h3 class="anchored" data-anchor-id="i-131-치료스캔-정보">I-131 치료스캔 정보</h3>
+<ul>
+<li>2014-04-09이후는 핵의학영상검사판독 중 치료스캔 정보를 수집</li>
+<li>2014년부터의 판독조회자료를 다운로드 후 항목코드 D43018 또는 HD074이면서 처방일이 2014-04-09이후를 선별
+<ul>
+<li>2014-04-14부터 2024-12-18까지 총 1695 회의 치료가 있었으며</li>
+<li>환자는 1433명 이었다.</li>
+</ul></li>
+</ul>
+<ul>
+<li>Access 데이터베이스의 치료정보와 OCR 다운로드된 치료스캔의 정보를 합쳤고,
+<ul>
+<li>총 치료횟수는 11244였다.</li>
+<li>총 환자수는 8386 였다.</li>
+</ul></li>
+</ul>
+</section>
+<section id="levothyroxine-처방통계" class="level3">
+<h3 class="anchored" data-anchor-id="levothyroxine-처방통계">Levothyroxine 처방통계</h3>
+<ul>
+<li>약품별 처방통계로부터 다운로드하여 tx_patient_data의 followupdate 결정에 사용</li>
+<li>다운로드 가능했던 처방기간은 2000-07-12부터 2024-12-31</li>
+<li>tx_patient_data 환자들은 8386명이었고</li>
+<li>치료환자 중 2000-07-12 이후의 T4 처방기록이 없는 637명은 수탁환자로 분류하였다.</li>
+<li>치료기록이 1회이면서 처방기록도 1회인 777경우도 수탁환자로 분류하였다.</li>
+<li>수탁으로 분류된 환자수는 2064명이었고 이를 제외한 환자=본원환자수는 6322이었다.
+<ul>
+<li>본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 5473명이었고,</li>
+<li>처방기록이 없는 경우는 849명이었는데, 후자는 2000년 7월 11일 이전의 수탁이나 기록이 없거나 2000년 7월 11일 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="저자의-환자" class="level2">
+<h2 class="anchored" data-anchor-id="저자의-환자">저자의 환자</h2>
+<ul>
+<li>예후/추척관찰 정보는 저자의 외래환자들에 대해 EMR 관심환자에 입력되어 있다.</li>
+<li>이는 핵의학 전체환자로 확장하기 전에 pilot 성격을 가진다.</li>
+</ul>
 <section id="c73-수술정보" class="level3">
 <h3 class="anchored" data-anchor-id="c73-수술정보">C73 수술정보</h3>
 <ul>
@@ -180,40 +241,6 @@ ul.task-list li input[type="checkbox"] {
 <li>최초진단일 입력건수는 10066 이었고, 수술일 입력건수는 2344, 둘 중 하나라도 입력된 건수는 10848이었다.</li>
 <li>갑상선제거방법 입력건수는 2311이었다.</li>
 <li>최초진단일만 입력된 경우가 상당수이긴 하지만 후술하는 치료가 된 환자들의 수술정보가 얼마나 매칭되는지가 관심이므로 일단락한다.</li>
-</ul>
-</section>
-<section id="i-131-치료-정보" class="level3">
-<h3 class="anchored" data-anchor-id="i-131-치료-정보">I-131 치료 정보</h3>
-<ul>
-<li><code>I-131 치료 정보</code> 테이블에 기입된 격리치료병실에 입실했던 환자들의 정보는 1988-04-26부터 2014-04-09까지 총 9549 회의 치료가 입력되어 있었다.</li>
-<li>수탁이 아닌경우의 환자수는 5007였다.</li>
-</ul>
-</section>
-</section>
-<section id="ocr-정보" class="level2">
-<h2 class="anchored" data-anchor-id="ocr-정보">OCR 정보</h2>
-<section id="i-131-치료스캔-정보" class="level3">
-<h3 class="anchored" data-anchor-id="i-131-치료스캔-정보">I-131 치료스캔 정보</h3>
-<ul>
-<li>앞서의 I-131 치료 정보는 2014-04-09까지 만이므로 그 이후의 자료를 보충하기 위해 판독 중치료스캔에 대한 정보를 수집하였다. 2014년부터의 판독조회자료를 다운로드한 후 항목코드 D43018 또는 HD074이면서 처방일이 2014-04-09 이후를 선별하였다.</li>
-<li>2014-04-14부터 2024-12-18까지 총 1695 회의 치료가 입력되어 있었다.</li>
-</ul>
-<ul>
-<li>Access와 OCR 기원의 치료정보를 합쳤고, 총치료횟수는 11244였다.</li>
-<li>환자수는 8386 였다.</li>
-</ul>
-</section>
-<section id="levothyroxine-처방통계" class="level3">
-<h3 class="anchored" data-anchor-id="levothyroxine-처방통계">Levothyroxine 처방통계</h3>
-<ul>
-<li>약품별 처방통계를 사용</li>
-<li>tx_patient_data의 followupdate 결정에 사용</li>
-<li>처방기간은 2006-01-02부터 2024-12-31</li>
-<li>tx_patient_data 환자들은 8386명이었고</li>
-<li>치료환자 중 (처방기록이 다운로드된) 2006년부터 T4 처방기록이 없는 248명은 수탁환자로 분류하였다.</li>
-<li>치료환자 중 치료기록이 1회이면서 처방기록도 1회인 631경우는 수탁환자로 분류하였다.</li>
-<li>치료환자 중 수탁치료의 기록이나 분류된 환자수는 1745명이었고 이를 제외한 환자=본원환자수는 6641이었다.</li>
-<li>본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 5091명이었고, 처방기록이 없는 경우는 1550명이었는데, 후자는 2006년 이전의 수탁이나 기록이 없거나 2006년 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.</li>
 </ul>
 
 
