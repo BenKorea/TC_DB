@@ -23,6 +23,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -111,13 +145,13 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#access-데이터베이스" id="toc-access-데이터베이스" class="nav-link active" data-scroll-target="#access-데이터베이스">Access 데이터베이스</a>
-  <ul class="collapse">
-  <li><a href="#i-131-치료-정보" id="toc-i-131-치료-정보" class="nav-link" data-scroll-target="#i-131-치료-정보">I-131 치료 정보</a></li>
-  </ul></li>
-  <li><a href="#ocr-다운로드" id="toc-ocr-다운로드" class="nav-link" data-scroll-target="#ocr-다운로드">OCR 다운로드</a>
+  <li><a href="#ocr-다운로드" id="toc-ocr-다운로드" class="nav-link active" data-scroll-target="#ocr-다운로드">OCR 다운로드</a>
   <ul class="collapse">
   <li><a href="#i-131-치료스캔-정보" id="toc-i-131-치료스캔-정보" class="nav-link" data-scroll-target="#i-131-치료스캔-정보">I-131 치료스캔 정보</a></li>
+  </ul></li>
+  <li><a href="#access-데이터베이스" id="toc-access-데이터베이스" class="nav-link" data-scroll-target="#access-데이터베이스">Access 데이터베이스</a>
+  <ul class="collapse">
+  <li><a href="#i-131-치료-정보" id="toc-i-131-치료-정보" class="nav-link" data-scroll-target="#i-131-치료-정보">I-131 치료 정보</a></li>
   <li><a href="#levothyroxine-처방통계" id="toc-levothyroxine-처방통계" class="nav-link" data-scroll-target="#levothyroxine-처방통계">Levothyroxine 처방통계</a></li>
   </ul></li>
   <li><a href="#저자의-환자" id="toc-저자의-환자" class="nav-link" data-scroll-target="#저자의-환자">저자의 환자</a>
@@ -161,7 +195,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">January 14, 2025</p>
+      <p class="date-modified">January 17, 2025</p>
     </div>
   </div>
     
@@ -172,56 +206,127 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="ocr-다운로드" class="level2">
+<h2 class="anchored" data-anchor-id="ocr-다운로드">OCR 다운로드</h2>
+<section id="i-131-치료스캔-정보" class="level3">
+<h3 class="anchored" data-anchor-id="i-131-치료스캔-정보">I-131 치료스캔 정보</h3>
+<p>I-131 치료정보를 구하는 방법은 몇 가지가 있겠지만 이 글에서는 판독소견조회메뉴에서 다운로드된 자료에서 추출하는 방식을 설명합니다.</p>
+<ul>
+<li><p>핵의학체내/검사결과관리/판독소견조회 메뉴에서 접수일자를 설정하고 검사실을 감마카메라실로 설정하여 진행합니다.</p>
+<ul>
+<li>이 때 접수일자기간을 너무 길게 설정하면 오류가 나므로 3개월에서 6개월 정도가 필요하면 특정기간에서 검사가 많아서 3개월로 설정하는 것이 안전합니다.</li>
+</ul></li>
+<li><p>조회가 완료되면 좌하측의 “조회내역출력”버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다. 페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다. csv 파일형식을 지원하지 않으므로 “Microsoft Excel 파일 (*.xls)로 진행하면 됩니다.</p></li>
+<li><p>보고서 형식 유지는 불필요하므로 선택을 해제하고 진행하면 됩니다.</p></li>
+<li><p>저장 후에는 마우스 우클릭으로 보안문서관리의 암호화해제를 해야 파일을 열어 볼 수 있습니다.</p></li>
+<li><p>자료를 다운로드 받는 곳은 사전에 허락된 전산적으로 안전한 폴더에 해야 하면, 곧바로 암호를 설정하고, 익명화작업을 거친 자료를 만든 후 원본자료를 바로 영구삭제를 해야 합니다.</p></li>
+<li><p>이글의 아래 부분들은 익명화작업이 완변히 진행되었다고 가정하고 설명을 합니다.</p></li>
+<li><p>이글의 작성시점에서 다운로드된 자료의 개요는 아래와 같습니다.</p>
+<ul>
+<li>기간: 2000-07-01 ~ 2024-12-31</li>
+<li>총자료수: 301904</li>
+</ul></li>
+</ul>
+<section id="항목코드-hd074-선별" class="level4">
+<h4 class="anchored" data-anchor-id="항목코드-hd074-선별">항목코드 HD074 선별</h4>
+<p>I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔다. 최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는</p>
+<ul>
+<li><p><code>HD074</code></p></li>
+<li><p>즉 <code>체내섭취평가 전신스캔 방법</code></p></li>
+</ul>
+<p>을 아마도 2024년도 부터 사용하고 있다. 가장 최신의 코드로 추출하고 원하는 자료가 맞는지 검증을 진행하였다.</p>
+<ul>
+<li><p>기간: 2024-01-12 ~ 2024-12-20</p></li>
+<li><p>총 스캔수: 129</p></li>
+</ul>
+<p>그러나 DOTATATE 및 PSMA 치료와 같은 타과와의 공동임상시험에서도 위의 치료스캔코드를 사용하므로 이를 배제하기 위해 진료과를 NM으로 한정하면</p>
+<ul>
+<li>진료과==NM인 스캔수: 125 이었다.</li>
+</ul>
+<p>요일에 따른 분석에서 검증을 시행했을 때,</p>
+<ul>
+<li><p>5 케이스가 있었고, 판독내용을 보면 Ra-223 치료스캔이거나 NM에서 시행된 DOTATATE 치료이므로 일단 모든 월요일스캔을 제외하고 진행하기로 하였다.</p></li>
+<li><p>따라서 HD074로 I-131 치료스캔으로 인정되는 사례는 120였다.</p></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/HD074-graph-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/HD074-graph-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/HD074-graph-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
 <section id="access-데이터베이스" class="level2">
 <h2 class="anchored" data-anchor-id="access-데이터베이스">Access 데이터베이스</h2>
 <section id="i-131-치료-정보" class="level3">
 <h3 class="anchored" data-anchor-id="i-131-치료-정보">I-131 치료 정보</h3>
 <ul>
-<li><code>I-131 치료 정보</code> 테이블에
+<li>저자는 핵의학치료를 <code>I-131 치료 정보</code> 테이블에 2014년7월9일까지 입력했었다.
 <ul>
-<li>1988-04-26부터 2014-04-09까지</li>
-<li>9549회의 핵의학치료가 입력되어 있었으며,</li>
-<li>환자를 기준으로 하면 7088명이었고, 입력된 수탁정보를 기준으로
+<li>1988-04-26부터 2014-05-19까지</li>
+<li>9535회의 핵의학치료가 입력되어 있었으며,</li>
+<li>환자를 기준으로 하면 7081명이었고, 입력된 수탁정보를 기준으로
 <ul>
-<li>본원환자는 5031명</li>
-<li>수탁환자는 2057명이었다.</li>
+<li>본원환자는 5026명</li>
+<li>수탁환자는 2055명이었다.</li>
 </ul></li>
 </ul></li>
 </ul>
-</section>
-</section>
-<section id="ocr-다운로드" class="level2">
-<h2 class="anchored" data-anchor-id="ocr-다운로드">OCR 다운로드</h2>
-<section id="i-131-치료스캔-정보" class="level3">
-<h3 class="anchored" data-anchor-id="i-131-치료스캔-정보">I-131 치료스캔 정보</h3>
-<ul>
-<li>2014-04-09이후는 핵의학영상검사판독 중 치료스캔 정보를 수집</li>
-<li>2014년부터의 판독조회자료를 다운로드 후 항목코드 D43018 또는 HD074이면서 처방일이 2014-04-09이후를 선별
-<ul>
-<li>2014-04-14부터 2024-12-18까지 총 1695 회의 치료가 있었으며</li>
-<li>환자는 1433명 이었다.</li>
-</ul></li>
-</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>revised_tx_data <span class="ot">&lt;-</span> <span class="fu">copy</span>(rai_revised)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 회차가 NA인 경우 처리는 일단 보류, 외부를 셈하기 때문에 시작이 항상 1이 아닐 수 있음 </span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># revised_tx_data[is.na(회차), 회차 := as.integer(frank(투여일, ties.method = "dense")), by = PtID]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>tx_patient_data <span class="ot">&lt;-</span> revised_tx_data <span class="sc">%&gt;%</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(PtID, 환자이름) <span class="sc">%&gt;%</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">first =</span> <span class="fu">as.Date</span>(<span class="fu">min</span>(투여일)),</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">last =</span> <span class="fu">as.Date</span>(<span class="fu">max</span>(투여일)),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">count =</span> <span class="fu">n</span>(),</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">refer =</span> <span class="fu">sum</span>(refer),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <ul>
 <li>Access 데이터베이스의 치료정보와 OCR 다운로드된 치료스캔의 정보를 합쳤고,
 <ul>
-<li>총 치료횟수는 11244였다.</li>
-<li>총 환자수는 8386 였다.</li>
+<li>총 치료횟수는 11607였다.</li>
+<li>총 환자수는 8551 였다.</li>
 </ul></li>
 </ul>
 </section>
 <section id="levothyroxine-처방통계" class="level3">
 <h3 class="anchored" data-anchor-id="levothyroxine-처방통계">Levothyroxine 처방통계</h3>
 <ul>
-<li>약품별 처방통계로부터 다운로드하여 tx_patient_data의 followupdate 결정에 사용</li>
-<li>다운로드 가능했던 처방기간은 2000-07-12부터 2024-12-31</li>
-<li>tx_patient_data 환자들은 8386명이었고</li>
-<li>치료환자 중 2000-07-12 이후의 T4 처방기록이 없는 637명은 수탁환자로 분류하였다.</li>
-<li>치료기록이 1회이면서 처방기록도 1회인 777경우도 수탁환자로 분류하였다.</li>
-<li>수탁으로 분류된 환자수는 2064명이었고 이를 제외한 환자=본원환자수는 6322이었다.
+<li>약품별 처방통계로부터 다운로드하여 followupdate 결정에 사용</li>
+<li>(다운로드 가능했던) 처방기간은 1999-08-02부터 2025-01-17</li>
+<li>tx_patient_data 환자들은 8551명이었고</li>
+<li>치료환자 중 1999-08-02 이후의 T4 처방기록이 없는 143명은 수탁환자로 분류하였다.</li>
+<li>치료기록이 1회이면서 처방기록도 1회인 206경우도 수탁환자로 분류하였다.</li>
+<li>수탁으로 분류된 환자수는 2120명이었고 이를 제외한 환자=본원환자수는 6431이었다.
 <ul>
-<li>본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 5473명이었고,</li>
-<li>처방기록이 없는 경우는 849명이었는데, 후자는 2000년 7월 11일 이전의 수탁이나 기록이 없거나 2000년 7월 11일 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.</li>
+<li>본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 6122명이었고,</li>
+<li>처방기록이 없는 경우는 309명이었는데, 후자는 2000년 7월 11일 이전의 수탁이나 기록이 없거나 2000년 7월 11일 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.</li>
+<li>레보신정(T4), 싸이로닌정(T3) 조회를 검토해야 함. 일부환자에서는 레보신정에서 씬지로이드로 2000년에 변경됨.</li>
 </ul></li>
 </ul>
 </section>
@@ -237,9 +342,9 @@ ul.task-list li input[type="checkbox"] {
 <ul>
 <li>저자는 MS Access를 이용하여 방사성요오드 치료에 대한 데이터베이스를 구축하였었다. 이 자료 중에는 <code>갑상선암 정보</code>라는 환자정보에 해당하는 테이블이 있었다.</li>
 <li>등록번호가 5자리 미만이거나 8자리 초과는 오류이므로 삭제한 후 정리해보면</li>
-<li>수술일을 기준으로 1974-07-03부터 2014-02-13 까지의 12265 명의 갑상선암 상병명을 가진 환자들의 수술 정보들이 입력되어 있다.</li>
-<li>최초진단일 입력건수는 10066 이었고, 수술일 입력건수는 2344, 둘 중 하나라도 입력된 건수는 10848이었다.</li>
-<li>갑상선제거방법 입력건수는 2311이었다.</li>
+<li>수술일을 기준으로 1974-07-03부터 2014-02-13 까지의 12281 명의 갑상선암 상병명을 가진 환자들의 수술 정보들이 입력되어 있다.</li>
+<li>최초진단일 입력건수는 10052 이었고, 수술일 입력건수는 2358, 둘 중 하나라도 입력된 건수는 10842이었다.</li>
+<li>갑상선제거방법 입력건수는 2321이었다.</li>
 <li>최초진단일만 입력된 경우가 상당수이긴 하지만 후술하는 치료가 된 환자들의 수술정보가 얼마나 매칭되는지가 관심이므로 일단락한다.</li>
 </ul>
 

@@ -5,7 +5,7 @@ my_read_excel_list<- function(directory, pattern) {
     as.data.table(read_excel(file, col_types = "text"))
   })
   data<-rbindlist(data_list, use.names = TRUE, fill = TRUE)
-  data <-my_PtID(data)
+  # data <-my_PtID(data)
 
   return(data)
   
