@@ -12,7 +12,6 @@ manusctipt_mode<-"N"
 input_error_checking_mode<-"Y"
 ```
 
-
 ```{r library, echo=FALSE, message=FALSE}
 
 library(data.table)
@@ -37,7 +36,6 @@ load_source_files <- function (source_folder) {
 load_source_files("source")
 ```
 
-
 ```{r gamma, echo=FALSE, message=FALSE, warning=FALSE}
 
 gamma_raw<- my_read_excel_list("raw_data/Gamma_data","Gamma")
@@ -59,9 +57,7 @@ I-131 치료정보를 구하는 방법은 몇 가지가 있겠지만 이 글에�
 
 -   이 때 접수일자기간을 너무 길게 설정하면 오류가 나므로 3개월에서 6개월 정도가 적당해 보입니다. 하지만 특정분기에는 검사 건수가 많아 3개월 단위로 다운로드 하는 것이 제일 안전합니다.
 
--   조회가 완료되면 좌하측의 "조회내역출력"버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다.
-    페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다.
-    csv 파일형식을 지원하지 않으므로 "Microsoft Excel 파일 (\*.xls)로 진행하면 됩니다.
+-   조회가 완료되면 좌하측의 "조회내역출력"버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다. 페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다. csv 파일형식을 지원하지 않으므로 "Microsoft Excel 파일 (\*.xls)로 진행하면 됩니다.
 
 -   보고서 형식 유지는 불필요하므로 선택을 해제하고 진행하면 됩니다.
 
@@ -76,7 +72,6 @@ I-131 치료정보를 구하는 방법은 몇 가지가 있겠지만 이 글에�
     -   기간: `r min(gamma$실시일, na.rm=TRUE)` \~ `r max(gamma$실시일, na.rm=TRUE)`
     -   총자료수: `r nrow(gamma)`
 
-
 ```{r HD074, echo=FALSE, message=FALSE, warning=FALSE}
 
 HD074_raw <- gamma[항목코드 %in% "HD074"]
@@ -90,15 +85,13 @@ HD074 <- HD074_NM[!(요일 %in% "월요일")]
 
 #### 항목코드 HD074 선별
 
-I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다.
-최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는
+I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다. 최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는
 
 -   항목코드: `HD074`
 
 -   항목명: `체내섭취평가 전신스캔 방법`
 
-을 특정시점부터 사용하고 있습니다.
-그래서 가장 최신의 코드인 `HD074` 부터 우선 선별하고 원하는 자료가 맞는지 검증을 진행하였습니다.
+을 특정시점부터 사용하고 있습니다. 그래서 가장 최신의 코드인 `HD074` 부터 우선 선별하고 원하는 자료가 맞는지 검증을 진행하였습니다.
 
 -   기간: `r min(HD074$실시일, na.rm=TRUE)` \~ `r max(HD074$실시일, na.rm=TRUE)`
 
@@ -134,8 +127,6 @@ plots<-my_daily_graphs(HD074_실시일별)
 walk(plots, print)
 ```
 
-
-
 ```{r D43018, echo=FALSE, message=FALSE}
 
 D43018 <- gamma[항목코드 %in% "D43018"]
@@ -144,23 +135,22 @@ D43018_실시일별 <- D43018[, .(n = .N), by = .(실시일, 요일)]
 
 #### 항목코드 D43018 선별
 
-- 항목코드 `D43018`은 항목명 `[131I] Whole Body Scan (Post Treatment)`입니다.
-- 선별해보면 
-  - 기간: `r min(D43018$실시일, na.rm=TRUE)` ~ `r max(D43018$실시일, na.rm=TRUE)`
-  - 총건수: `r nrow(D43018)` 이었습니다.
-  - 전형적인 코드이므로 요일과 무관하게 당연히 I-131 치료스캔으로 판단됩니다.
-  - HD074와 처방기간의 중복도 없습니다.
-- 오류점검에서
-  - 시행일별 최대건수는 `r max(D43018_실시일별$n, na.rm=TRUE)`로 치료병실 가동범위 내입니다.
-  - 그래프는 아래와 같습니다.
-  
+-   항목코드 `D43018`은 항목명 `[131I] Whole Body Scan (Post Treatment)`입니다.
+-   선별해보면
+    -   기간: `r min(D43018$실시일, na.rm=TRUE)` \~ `r max(D43018$실시일, na.rm=TRUE)`
+    -   총건수: `r nrow(D43018)` 이었습니다.
+    -   전형적인 코드이므로 요일과 무관하게 당연히 I-131 치료스캔으로 판단됩니다.
+    -   HD074와 처방기간의 중복도 없습니다.
+-   오류점검에서
+    -   시행일별 최대건수는 `r max(D43018_실시일별$n, na.rm=TRUE)`로 치료병실 가동범위 내입니다.
+    -   그래프는 아래와 같습니다.
+
 ```{r echo=FALSE, message=FALSE}
 #| label: fig-D43018
 
 plots<-my_daily_graphs(D43018_실시일별)
 walk(plots, print)
 ```
-
 
 ```{r D43019, echo=FALSE, message=FALSE}
 
@@ -174,18 +164,17 @@ D43019_after_D43018 <- D43019[실시일 >= min_D43018_date]
 D43019_실시일별 <- D43019[, .(n = .N), by = .(실시일, 요일)]
 ```
 
-
 #### 항목코드 D43019 선별
 
-- 항목코드 `D43019`은 항목명 `[131I] Whole Body Scan (5mCi)`입니다.
-- 선별해보면 
-  - 기간: `r min(D43019$실시일, na.rm=TRUE)` ~ `r max(D43019$실시일, na.rm=TRUE)`
-  - 총건수: `r nrow(D43019)` 였습니다.
-  - 그 이전에도 이 코드는 사용되었지만 전산화가 되기 이전은 다운로드가 되지 않아서 최초 사용일이 2000년도라 생각됩니다.
-  - 기간에 따라 사용목적이 달라졌다고 생각되는데 `D43018`이 사용되기전인 `r min(D43018$실시일, na.rm=TRUE)` 이전의 `r nrow(D43019_before_D43018)` 사례는 I-131 치료스캔으로 사용이되었다고 생각됩니다. 이후의 `r nrow(D43019_after_D43018)` 사례는 진단스캔으로 사용된 것으로 추정됩니다.
-  - 일단은 `D43018` 이전은 치료로 간주하고 이후는 사용목적이 불분명하지만 그 빈도가 높지 않으므로 I-131 diagnostic whole body scan으로 사용된 것으로 간주하고 진행하였습니다.
-- 오류점검에서
-  - 시행일별 최대건수는 `r max(D43019_실시일별$n, na.rm=TRUE)`로 치료병실 가동범위 내입니다.
+-   항목코드 `D43019`은 항목명 `[131I] Whole Body Scan (5mCi)`입니다.
+-   선별해보면
+    -   기간: `r min(D43019$실시일, na.rm=TRUE)` \~ `r max(D43019$실시일, na.rm=TRUE)`
+    -   총건수: `r nrow(D43019)` 였습니다.
+    -   그 이전에도 이 코드는 사용되었지만 전산화가 되기 이전은 다운로드가 되지 않아서 최초 사용일이 2000년도라 생각됩니다.
+    -   기간에 따라 사용목적이 달라졌다고 생각되는데 `D43018`이 사용되기전인 `r min(D43018$실시일, na.rm=TRUE)` 이전의 `r nrow(D43019_before_D43018)` 사례는 I-131 치료스캔으로 사용이되었다고 생각됩니다. 이후의 `r nrow(D43019_after_D43018)` 사례는 진단스캔으로 사용된 것으로 추정됩니다.
+    -   일단은 `D43018` 이전은 치료로 간주하고 이후는 사용목적이 불분명하지만 그 빈도가 높지 않으므로 I-131 diagnostic whole body scan으로 사용된 것으로 간주하고 진행하였습니다.
+-   오류점검에서
+    -   시행일별 최대건수는 `r max(D43019_실시일별$n, na.rm=TRUE)`로 치료병실 가동범위 내입니다.
 
 ```{r echo=FALSE, message=FALSE}
 #| label: fig-D43019
@@ -202,9 +191,8 @@ D43020 <- gamma[항목코드 %in% "D43020"]
 
 #### 항목코드 D43020 비선별
 
-- 항목코드 `D43020`은 항목명 `[131I] Whole Body Scan (10mCi)`입니다.
-- 진단스캔만으로 사용되었다 생각되어 치료스캔에 포함시키지 않았습니다.
-
+-   항목코드 `D43020`은 항목명 `[131I] Whole Body Scan (10mCi)`입니다.
+-   진단스캔만으로 사용되었다 생각되어 치료스캔에 포함시키지 않았습니다.
 
 ```{r ocs_tx, echo=FALSE, message=FALSE}
 
@@ -226,12 +214,12 @@ ocs_tx[, 치료종류 := "I-131"]
 ```
 
 #### ocs_tx 자료의 통합
-- D43019의 그래프를 보면 2003년 5월부터 사용이 급감하므로 이전의 자료 `r nrow(D43019_20030501)`를  OCS 기원의 치료자료에 통합하였고
-- D43018은 자료수 `r nrow(D43018)` 그대로 통합하였고
-- HD074도 자료수 `r nrow(HD074)` 그대로 통합하여
-- 총자료수 `r nrow(ocs_tx)` 로 진행하였습니다.
-- 하지만 D43019의 2001년 그래프를 보면 치료건수가 3월부터 약 20건으로 급증하여 이 것이 국가방사선비상진료센터 내의 격리치료병실이 가동되기 시작한 때로 추정되며, 치료환자의 분석시작 시점으로 설정하는 것도 향후 고려됩니다.
 
+-   D43019 자료는 D43018이 최초사용일인 `r max(D43018$실시일, na.rm=TRUE)`까지만 통합에 사용하였습니다.
+-   D43018은 자료수 `r nrow(D43018)` 그대로 통합하였고
+-   HD074도 자료수 `r nrow(HD074)` 그대로 통합하여
+-   총자료수 `r nrow(ocs_tx)` 로 진행하였습니다.
+-   하지만 D43019의 2001년 그래프를 보면 치료건수가 3월부터 약 20건으로 급증하여 이 것이 국가방사선비상진료센터 내의 격리치료병실이 가동되기 시작한 때로 추정되며, 치료환자의 분석시작 시점으로 설정하는 것도 향후 고려됩니다.
 
 ```{r access_tx, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -258,8 +246,8 @@ access_tx_patient <- access_tx[, .(
   refer = sum(refer, na.rm = TRUE)
 ), by = .(PtID, 환자이름)]
 
-acess_tx_patient_our <- access_tx_patient[refer == 0]
-acess_tx_patient_refer <- access_tx_patient[refer > 0]
+access_tx_patient_our <- access_tx_patient[refer == 0]
+access_tx_patient_refer <- access_tx_patient[refer > 0]
 ```
 
 ## Access 데이터베이스
@@ -269,9 +257,9 @@ acess_tx_patient_refer <- access_tx_patient[refer > 0]
 -   저자는 핵의학치료를 `I-131 치료 정보` 테이블에 2014년7월9일까지 입력했었습니다.
     -   `r min(access_tx$투여일, na.rm=TRUE)`부터 `r max(access_tx$투여일, na.rm=TRUE)`까지
     -   `r nrow(access_tx)`회의 핵의학치료가 입력되어 있었으며,
-    -   환자를 기준으로 하면 `r nrow(acess_tx_patient)`명이었고, 입력된 수탁정보를 기준으로
-        -   본원환자는 `r nrow(acess_tx_patient_our)`명
-        -   수탁환자는 `r nrow(acess_tx_patient_refer)`명이었습니다.
+    -   환자를 기준으로 하면 `r nrow(access_tx_patient)`명이었고, 입력된 수탁정보를 기준으로
+        -   본원환자는 `r nrow(access_tx_patient_our)`명
+        -   수탁환자는 `r nrow(access_tx_patient_refer)`명이었습니다.
 
 ```{r rai_graph, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -282,8 +270,8 @@ plots <- my_daily_graphs(access_tx_실시일별)
 
 walk(plots, print)
 ```
-- 그래프를 보면 `r min(access_tx$실시일, na.rm+TRUE)`부터이지만, 1996년 이전은 간헐적으로 입력된 것으로 판단되므로, 경우에 따라서는 1996년부터 분석대상으로 하는 것이 고려될 수 있다. 
 
+-   그래프를 보면 `r min(access_tx$실시일, na.rm=TRUE)`부터이지만, 1996년 이전은 간헐적으로 입력된 것으로 판단되므로, 경우에 따라서는 1996년부터 분석대상으로 하는 것이 고려될 수 있다.
 
 ```{r rai_tx, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -321,10 +309,10 @@ non_rai <- rai_tx[치료종류 == "I-131 MIBG" | 치료종류 == "RIT"]
 ```
 
 -   Access 데이터베이스의 `r nrow(access_tx)` 건과 OCS 다운로드된 `r nrow(ocs_tx)` 건을 단순히 병합하면 `r nrow(rai_raw)`이지만
-- 중복된 `r nrow(rai_duplicated)` 건을 제외하면
-- 총 치료횟수는 `r nrow(rai_tx)` 건이었다.
-- 치료종류가 `I-131 MIBG` 와 `RIT` 는 `r nrow(non_rai)` 였다.
-- 이를 제외한 Radioactive Iodine Therapy는 `r nrow(rai_pure)` 건 이었다.
+-   중복된 `r nrow(rai_duplicated)` 건을 제외하면
+-   총 치료횟수는 `r nrow(rai_tx)` 건이었다.
+-   치료종류가 `I-131 MIBG` 와 `RIT` 는 `r nrow(non_rai)` 였다.
+-   이를 제외한 Radioactive Iodine Therapy는 `r nrow(rai_pure)` 건 이었다.
 
 ```{r rai_patient, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -338,7 +326,6 @@ rai_patient <-rai_temp[, .(
 ), by = .(PtID, 환자이름)]
 ```
 
-
 ```{r emr_raw, echo=FALSE, warning=FALSE, message=FALSE}
 
 emr_raw<- my_read_excel_list("raw_data","관심환자")
@@ -346,16 +333,34 @@ emr_raw <- emr_raw[, .(등록일, 등록번호, 성별, 나이, 특기사항, �
 emr_raw[, 등록일 := as.IDate(등록일)]
 ```
 
-
 ```{r emr_tx, echo=FALSE, warning=FALSE, message=FALSE}
 
 emr_tx <- my_parsing_emr_tx(emr_raw)
 ```
 
+```{r test}
+
+  dt<-emr_tx
+
+  # rhTSH 포함여부에 따라 
+  dt[, rhTSH := ifelse(grepl("\\brhTSH\\b", tx_line), TRUE, FALSE)]
+  dt[, remained := gsub("\\brhTSH\\b", "", tx_line)]
+  
+  # with 포함여부에 따라 
+  dt[, 치료종류 := ifelse(grepl("\\with\\b", tx_line), TRUE, FALSE)]
+  dt[, remained := gsub("\\brhTSH\\b", "", tx_line)]
+  
+    
+  # tstrsplit가 분리되지 않으면 keep=2에서 오류가 발생하므로 분리되는 것만 keep=2
+  dt[grepl("@", remained), outside_tx := tstrsplit(remained, "@", fixed = TRUE, keep=2)]
+  dt[, remained := tstrsplit(remained, "@", fixed = TRUE, keep=1)]
+  
+  
+```
+
 ```{r end, echo=FALSE}
 
 ```
-
 
 ```{r prescription, echo=FALSE}
 
@@ -381,77 +386,23 @@ t4_data <- t4_backup<-t4_data %>%
 setnames(t4_data, old = "등록번호", new = "PtID")
 ```
 
-```{r tx_data_merge, echo=FALSE}
-
-rai_patient_data <- merge(rai_patient_data, t4_data, by = "PtID", all.x = TRUE)
-
-na_number_rai_patient_data_refer<-sum(is.na(rai_patient_data$refer))
-other_number_rai_patient_data_refer<-table(rai_patient_data$refer)
-
-last_t4_na_20000711<-rai_patient_data %>% filter(as.Date(rai_patient_data$last) > as.Date("2000-07-11") & is.na(rai_patient_data$last_t4))
-
-na_number_last_t4_na_20000711_refer<-sum(is.na(last_t4_na_20000711$refer))
-other_number_last_t4_na_20000711_refer<-table(last_t4_na_20000711$refer)
-
-rai_patient_data$refer <- ifelse(
-  as.Date(rai_patient_data$last) > as.Date("2000-07-11") & is.na(rai_patient_data$last_t4), "1", rai_patient_data$refer)
-
-na_number_rai_patient_data_refer2<-sum(is.na(rai_patient_data$refer))
-other_number_rai_patient_data_refer2<-table(rai_patient_data$refer)
-
-tx_1_t4_1<-rai_patient_data %>% filter(count==1&count_t4==1)
-
-na_number_tx_1_t4_1_refer<-sum(is.na(tx_1_t4_1$refer))
-other_number_tx_1_t4_1_refer<-table(tx_1_t4_1$refer)
-
-rai_patient_data$refer <- ifelse((rai_patient_data$count==1&rai_patient_data$count_t4==1),"1",rai_patient_data$refer)
-
-na_number_rai_patient_data_refer3<-sum(is.na(rai_patient_data$refer))
-other_number_rai_patient_data_refer3<-table(rai_patient_data$refer)
-
-rai_refer<-rai_patient_data %>% filter(as.numeric(refer)>0)
-rai_no_refer<-rai_patient_data %>% filter(as.numeric(refer)==0|is.na(refer))
-rai_no_refer_followup <- rai_no_refer %>% filter(!is.na(last_t4))
-rai_no_refer_no_followup <- rai_no_refer %>% filter(is.na(last_t4))
-```
-
-### Levothyroxine 처방통계
-
--   약품별 처방통계로부터 다운로드하여 followupdate 결정에 사용
--   (다운로드 가능했던) 처방기간은 `r min(t4_data$first_t4, na.rm=TRUE)`부터 `r max(t4_data$last_t4, na.rm=TRUE)`
--   rai_patient_data 환자들은 `r nrow(rai_patient_data)`명이었고
--   치료환자 중 `r min(t4_data$first_t4, na.rm=TRUE)` 이후의 T4 처방기록이 없는 `r nrow(last_t4_na_20000711)`명은 수탁환자로 분류하였다.
--   치료기록이 1회이면서 처방기록도 1회인 `r nrow(tx_1_t4_1)`경우도 수탁환자로 분류하였다.
--   수탁으로 분류된 환자수는 `r nrow(rai_refer)`명이었고 이를 제외한 환자=본원환자수는 `r nrow(rai_no_refer)`이었다.
-    -   본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 `r nrow(rai_no_refer_followup)`명이었고,
-    -   처방기록이 없는 경우는 `r nrow(rai_no_refer_no_followup)`명이었는데, 후자는 2000년 7월 11일 이전의 수탁이나 기록이 없거나 2000년 7월 11일 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.
-
-## 저자의 환자
-
--   예후/추척관찰 정보는 저자의 외래환자들에 대해 EMR 관심환자에 입력되어 있다.
--   이는 핵의학 전체환자로 확장하기 전에 pilot 성격을 가진다.
-
-
-
 ```{r birthday_data, echo=FALSE, warning=FALSE, message=FALSE}
 
 # 나이에 있는 "세"를 제거하고 정수형으로 변환
-raw_data$나이 <- as.integer(sub("세", "", raw_data$나이))
-setnames(raw_data, old="등록번호", new="PtID")
-birthday_data <- my_parsing_birthday_data (raw_data)
+emr_raw$나이 <- as.integer(sub("세", "", emr_raw$나이))
+setnames(emr_raw, old="등록번호", new="PtID")
+birthday_data <- my_parsing_birthday_data (emr_raw)
 ```
 
 ```{r risk_data, echo=FALSE, warning=FALSE, message=FALSE}
 
-risk_data <- my_parsing_risk_data (raw_data)
+risk_data <- my_parsing_risk_data (emr_raw)
 ```
 
 ```{r response_data, echo=FALSE, warning=FALSE, message=FALSE}
 
-response_data <- my_parsing_response_data (raw_data)
+response_data <- my_parsing_response_data (emr_raw)
 ```
-
-
 
 ```{r c73, echo=FALSE}
 
@@ -506,3 +457,55 @@ c73_op_data <- c73_data[!is.na(최초진단일) |!is.na(수술일) | !is.na(갑�
 # rm(c73_data,c73_raw_data,merged_data, patient_raw_data)
 
 ```
+
+
+```{r tx_data_merge, echo=FALSE}
+
+rai_patient_data <- merge(rai_patient_data, t4_data, by = "PtID", all.x = TRUE)
+
+na_number_rai_patient_data_refer<-sum(is.na(rai_patient_data$refer))
+other_number_rai_patient_data_refer<-table(rai_patient_data$refer)
+
+last_t4_na_20000711<-rai_patient_data %>% filter(as.Date(rai_patient_data$last) > as.Date("2000-07-11") & is.na(rai_patient_data$last_t4))
+
+na_number_last_t4_na_20000711_refer<-sum(is.na(last_t4_na_20000711$refer))
+other_number_last_t4_na_20000711_refer<-table(last_t4_na_20000711$refer)
+
+rai_patient_data$refer <- ifelse(
+  as.Date(rai_patient_data$last) > as.Date("2000-07-11") & is.na(rai_patient_data$last_t4), "1", rai_patient_data$refer)
+
+na_number_rai_patient_data_refer2<-sum(is.na(rai_patient_data$refer))
+other_number_rai_patient_data_refer2<-table(rai_patient_data$refer)
+
+tx_1_t4_1<-rai_patient_data %>% filter(count==1&count_t4==1)
+
+na_number_tx_1_t4_1_refer<-sum(is.na(tx_1_t4_1$refer))
+other_number_tx_1_t4_1_refer<-table(tx_1_t4_1$refer)
+
+rai_patient_data$refer <- ifelse((rai_patient_data$count==1&rai_patient_data$count_t4==1),"1",rai_patient_data$refer)
+
+na_number_rai_patient_data_refer3<-sum(is.na(rai_patient_data$refer))
+other_number_rai_patient_data_refer3<-table(rai_patient_data$refer)
+
+rai_refer<-rai_patient_data %>% filter(as.numeric(refer)>0)
+rai_no_refer<-rai_patient_data %>% filter(as.numeric(refer)==0|is.na(refer))
+rai_no_refer_followup <- rai_no_refer %>% filter(!is.na(last_t4))
+rai_no_refer_no_followup <- rai_no_refer %>% filter(is.na(last_t4))
+```
+
+### Levothyroxine 처방통계
+
+-   약품별 처방통계로부터 다운로드하여 followupdate 결정에 사용
+-   (다운로드 가능했던) 처방기간은 `r min(t4_data$first_t4, na.rm=TRUE)`부터 `r max(t4_data$last_t4, na.rm=TRUE)`
+-   rai_patient_data 환자들은 `r nrow(rai_patient_data)`명이었고
+-   치료환자 중 `r min(t4_data$first_t4, na.rm=TRUE)` 이후의 T4 처방기록이 없는 `r nrow(last_t4_na_20000711)`명은 수탁환자로 분류하였다.
+-   치료기록이 1회이면서 처방기록도 1회인 `r nrow(tx_1_t4_1)`경우도 수탁환자로 분류하였다.
+-   수탁으로 분류된 환자수는 `r nrow(rai_refer)`명이었고 이를 제외한 환자=본원환자수는 `r nrow(rai_no_refer)`이었다.
+    -   본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 `r nrow(rai_no_refer_followup)`명이었고,
+    -   처방기록이 없는 경우는 `r nrow(rai_no_refer_no_followup)`명이었는데, 후자는 2000년 7월 11일 이전의 수탁이나 기록이 없거나 2000년 7월 11일 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.
+
+## 저자의 환자
+
+-   예후/추척관찰 정보는 저자의 외래환자들에 대해 EMR 관심환자에 입력되어 있다.
+-   이는 핵의학 전체환자로 확장하기 전에 pilot 성격을 가진다.
+
