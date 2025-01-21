@@ -22,6 +22,7 @@ library(lubridate)
 library(ggplot2)
 library(knitr)
 library(purrr)
+library(stringi)
 ```
 
 ```{r sourcing, echo=FALSE, message=FALSE}
@@ -55,9 +56,12 @@ I-131 치료정보를 구하는 방법은 몇 가지가 있겠지만 이 글에�
 
 -   핵의학체내/검사결과관리/판독소견조회 메뉴에서 접수일자를 설정하고 검사실을 감마카메라실로 설정하여 진행합니다.
 
--   이 때 접수일자기간을 너무 길게 설정하면 오류가 나므로 3개월에서 6개월 정도가 적당해 보입니다. 하지만 특정분기에는 검사 건수가 많아 3개월 단위로 다운로드 하는 것이 제일 안전합니다.
+-   이 때 접수일자기간을 너무 길게 설정하면 오류가 나므로 3개월에서 6개월 정도가 적당해 보입니다.
+    하지만 특정분기에는 검사 건수가 많아 3개월 단위로 다운로드 하는 것이 제일 안전합니다.
 
--   조회가 완료되면 좌하측의 "조회내역출력"버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다. 페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다. csv 파일형식을 지원하지 않으므로 "Microsoft Excel 파일 (\*.xls)로 진행하면 됩니다.
+-   조회가 완료되면 좌하측의 "조회내역출력"버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다.
+    페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다.
+    csv 파일형식을 지원하지 않으므로 "Microsoft Excel 파일 (\*.xls)로 진행하면 됩니다.
 
 -   보고서 형식 유지는 불필요하므로 선택을 해제하고 진행하면 됩니다.
 
@@ -85,13 +89,15 @@ HD074 <- HD074_NM[!(요일 %in% "월요일")]
 
 #### 항목코드 HD074 선별
 
-I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다. 최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는
+I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다.
+최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는
 
 -   항목코드: `HD074`
 
 -   항목명: `체내섭취평가 전신스캔 방법`
 
-을 특정시점부터 사용하고 있습니다. 그래서 가장 최신의 코드인 `HD074` 부터 우선 선별하고 원하는 자료가 맞는지 검증을 진행하였습니다.
+을 특정시점부터 사용하고 있습니다.
+그래서 가장 최신의 코드인 `HD074` 부터 우선 선별하고 원하는 자료가 맞는지 검증을 진행하였습니다.
 
 -   기간: `r min(HD074$실시일, na.rm=TRUE)` \~ `r max(HD074$실시일, na.rm=TRUE)`
 
@@ -342,39 +348,62 @@ emr_tx <- my_parsing_emr_tx(emr_raw)
 
   dt<-emr_tx
 
-# # 날짜가 불완전한 경우를 식별 (yyyy-??-??)
-# dt[, tx_date_incomplete := str_detect(tx_line, "\\d{4}-\\?\\?-\\?\\?")]
-# 
-# # 불완전한 날짜와 완전한 날짜를 구분
-# dt[, date := str_extract(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
-# dt[, date := fifelse(tx_date_incomplete, NA_character_, date)]
-# 
-# # 불완전한 날짜 레코드와 나머지 레코드 분리
-# incomplete_dates <- dt[tx_date_incomplete == TRUE]
-# complete_dates <- dt[tx_date_incomplete == FALSE]
-
-# rhTSH 및 MIBG 플래그 추출
-dt[, rhTSH := str_detect(tx_line, "\\brhTSH\\b")]
-dt[, MIBG := str_detect(tx_line, "\\bMIBG\\b")]
-dt[, tx_line := str_remove_all(tx_line, "\\brhTSH\\b|\\bMIBG\\b")]
-
-# 추가 설명 추출 (with ...)
-dt[, additional_info := str_extract(tx_line, "\\bwith\\b.*?(?=\\s*\\()")]
-dt[, tx_line := str_remove_all(tx_line, "\\bwith\\b.*?(?=\\s*\\()")]
-
-# 병원 이름 추출 (@ hospital_name)
-dt[, hospital := str_extract(tx_line, "@\\s*.*$")]
-dt[, tx_line := str_remove_all(tx_line, "@\\s*.*$")]
-
-# 용량 정보, 핵심 정보, 세부 정보 추출
-dt[, dose := str_extract(tx_line, "\\d+\\s*mCi")]
-dt[, primary_info := str_extract(tx_line, "\\bI-131\\b")]
-dt[, details := str_extract(tx_line, "\\(.*?\\)")]
-dt[, tx_line := str_remove_all(tx_line, "\\d+\\s*mCi|\\bI-131\\b|\\(.*?\\)")]
-
-
-
+  dt[, 투여일 := str_extract(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
+  dt[, tx_line := str_remove(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
+  emr_tx_date_error <<- dt[is.na(투여일)]
+  dt <- dt[!is.na(투여일)]
   
+
+  dt[, rhTSH := str_detect(tx_line, "\\brhTSH\\b")]
+  dt[, MIBG := str_detect(tx_line, "\\bMIBG\\b")]
+  dt[, tx_line := str_remove(tx_line, "\\brhTSH\\b|\\bMIBG\\b")]
+
+  dt[, combined_agent := str_extract(tx_line, "\\bwith\\b.*?(?=\\s*\\()")]
+  dt[, tx_line := str_remove_all(tx_line, "\\bwith\\b.*?(?=\\s*\\()")]
+  dt[, 치료종류 := fifelse(
+    MIBG == TRUE, 
+    "I-131 MIBG",  # MIBG가 TRUE인 경우
+    fifelse(
+      !is.na(combined_agent), 
+      str_c("I-131", combined_agent, sep = " "),  # combined_agent가 NA가 아니면 결합
+      "I-131"  # 나머지 경우
+    )
+  )]
+  emr_tx_type_error <<- dt[is.na(치료종류)]
+  dt <- dt[!is.na(치료종류)]
+
+  dt[, hospital := str_extract(tx_line, "@\\s*.*$")]
+  dt[, tx_line := str_remove_all(tx_line, "@\\s*.*$")]
+
+  dt[, 용량 := str_extract(tx_line, "\\d+\\s*mCi")]
+  dt[, tx_line := str_remove(tx_line, "\\d+\\s*mCi")]
+  dt[, 용량 := as.numeric(str_remove(용량, " mCi"))]
+  emr_tx_용량_error <<- dt[is.na(용량)]
+  dt <- dt[!is.na(용량)]
+    
+  dt[, tx_details := str_extract(tx_line, "\\(.*?\\)")]
+  dt[, tx_line := str_remove(tx_line, "\\(.*?\\)")]
+
+  # 1. "(#회차," 전체 추출 및 tx_details에서 삭제
+  dt[, full_match := str_extract(tx_details, "\\(#\\d+")]
+  dt[, tx_details := str_remove(tx_details, "\\(#\\d+")]
+
+  # 2. 회차 정보만 추출
+  dt[, 회차 := as.integer(str_extract(full_match, "\\d+"))]
+
+  emr_tx_회차_error <<- dt[is.na(회차)]
+  dt <- dt[!is.na(회차)]
+
+  dt[, scan := fifelse(
+    str_starts(tx_details, ","), 
+    str_extract(tx_details, "^,\\s*[^,]+,"),  # 시작이 ","일 때 다음 ","까지 추출
+   str_extract(tx_details, "^[^,]+,")        # 시작이 ","가 아닐 때 처음부터 ","까지 추출
+  )]
+  # tx_details에서 scan 내용을 제거
+dt[, tx_details := stri_replace_first_regex(tx_details, paste0("^", stri_escape_regex(str_trim(scan)), "\\s*,?"), "")]
+
+
+
 ```
 
 ```{r end, echo=FALSE}
