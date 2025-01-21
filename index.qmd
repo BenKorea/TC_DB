@@ -342,19 +342,38 @@ emr_tx <- my_parsing_emr_tx(emr_raw)
 
   dt<-emr_tx
 
-  # rhTSH 포함여부에 따라 
-  dt[, rhTSH := ifelse(grepl("\\brhTSH\\b", tx_line), TRUE, FALSE)]
-  dt[, remained := gsub("\\brhTSH\\b", "", tx_line)]
-  
-  # with 포함여부에 따라 
-  dt[, 치료종류 := ifelse(grepl("\\with\\b", tx_line), TRUE, FALSE)]
-  dt[, remained := gsub("\\brhTSH\\b", "", tx_line)]
-  
-    
-  # tstrsplit가 분리되지 않으면 keep=2에서 오류가 발생하므로 분리되는 것만 keep=2
-  dt[grepl("@", remained), outside_tx := tstrsplit(remained, "@", fixed = TRUE, keep=2)]
-  dt[, remained := tstrsplit(remained, "@", fixed = TRUE, keep=1)]
-  
+# # 날짜가 불완전한 경우를 식별 (yyyy-??-??)
+# dt[, tx_date_incomplete := str_detect(tx_line, "\\d{4}-\\?\\?-\\?\\?")]
+# 
+# # 불완전한 날짜와 완전한 날짜를 구분
+# dt[, date := str_extract(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
+# dt[, date := fifelse(tx_date_incomplete, NA_character_, date)]
+# 
+# # 불완전한 날짜 레코드와 나머지 레코드 분리
+# incomplete_dates <- dt[tx_date_incomplete == TRUE]
+# complete_dates <- dt[tx_date_incomplete == FALSE]
+
+# rhTSH 및 MIBG 플래그 추출
+dt[, rhTSH := str_detect(tx_line, "\\brhTSH\\b")]
+dt[, MIBG := str_detect(tx_line, "\\bMIBG\\b")]
+dt[, tx_line := str_remove_all(tx_line, "\\brhTSH\\b|\\bMIBG\\b")]
+
+# 추가 설명 추출 (with ...)
+dt[, additional_info := str_extract(tx_line, "\\bwith\\b.*?(?=\\s*\\()")]
+dt[, tx_line := str_remove_all(tx_line, "\\bwith\\b.*?(?=\\s*\\()")]
+
+# 병원 이름 추출 (@ hospital_name)
+dt[, hospital := str_extract(tx_line, "@\\s*.*$")]
+dt[, tx_line := str_remove_all(tx_line, "@\\s*.*$")]
+
+# 용량 정보, 핵심 정보, 세부 정보 추출
+dt[, dose := str_extract(tx_line, "\\d+\\s*mCi")]
+dt[, primary_info := str_extract(tx_line, "\\bI-131\\b")]
+dt[, details := str_extract(tx_line, "\\(.*?\\)")]
+dt[, tx_line := str_remove_all(tx_line, "\\d+\\s*mCi|\\bI-131\\b|\\(.*?\\)")]
+
+
+
   
 ```
 
@@ -458,7 +477,6 @@ c73_op_data <- c73_data[!is.na(최초진단일) |!is.na(수술일) | !is.na(갑�
 
 ```
 
-
 ```{r tx_data_merge, echo=FALSE}
 
 rai_patient_data <- merge(rai_patient_data, t4_data, by = "PtID", all.x = TRUE)
@@ -508,4 +526,3 @@ rai_no_refer_no_followup <- rai_no_refer %>% filter(is.na(last_t4))
 
 -   예후/추척관찰 정보는 저자의 외래환자들에 대해 EMR 관심환자에 입력되어 있다.
 -   이는 핵의학 전체환자로 확장하기 전에 pilot 성격을 가진다.
-
