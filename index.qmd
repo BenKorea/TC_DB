@@ -195,51 +195,51 @@ D43020 <- gamma[항목코드 %in% "D43020"]
 -   항목코드 `D43020`은 항목명 `[131I] Whole Body Scan (10mCi)`입니다.
 -   진단스캔만으로 사용되었다 생각되어 치료스캔에 포함시키지 않았습니다.
 
-```{r ocs_tx, echo=FALSE, message=FALSE}
+```{r Tx_OCS, echo=FALSE, message=FALSE}
 
-ocs_tx <- rbind(HD074, D43018, D43019_before_D43018)
+Tx_OCS <- rbind(HD074, D43018, D43019_before_D43018)
 
-# group_ocs_tx <- ocs_tx[, .(
+# group_Tx_OCS <- Tx_OCS[, .(
 #   횟수 = .N,
 #   first = min(실시일, na.rm = TRUE),
 #   last = max(실시일, na.rm = TRUE)
 # ), by = .(등록번호, 성명)]
 
-setnames(ocs_tx, old = "등록번호", new = "PtID")
-setnames(ocs_tx, old = "성명", new = "환자이름")
-setnames(ocs_tx, old = "처방일", new = "투여일")
-setnames(ocs_tx, old = "항목코드", new = "출처")
-ocs_tx[, 투여일 := 실시일 - 2]
-ocs_tx <- ocs_tx[, .SD, .SDcols = c("PtID", "환자이름", "투여일", "출처", "실시일")]
-ocs_tx[, 치료종류 := "I-131"]
+setnames(Tx_OCS, old = "등록번호", new = "PtID")
+setnames(Tx_OCS, old = "성명", new = "PtName")
+setnames(Tx_OCS, old = "처방일", new = "투여일")
+setnames(Tx_OCS, old = "항목코드", new = "출처")
+Tx_OCS[, 투여일 := 실시일 - 2]
+Tx_OCS <- Tx_OCS[, .SD, .SDcols = c("PtID", "PtName", "투여일", "출처", "실시일")]
+Tx_OCS[, 치료종류 := "I-131"]
 ```
 
-#### ocs_tx 자료의 통합
+#### Tx_OCS 자료의 통합
 
 -   D43019 자료는 D43018이 최초사용일인 `r max(D43018$실시일, na.rm=TRUE)`까지만 통합에 사용하였습니다.
 -   D43018은 자료수 `r nrow(D43018)` 그대로 통합하였고
 -   HD074도 자료수 `r nrow(HD074)` 그대로 통합하여
--   총자료수 `r nrow(ocs_tx)` 로 진행하였습니다.
+-   총자료수 `r nrow(Tx_OCS)` 로 진행하였습니다.
 -   하지만 D43019의 2001년 그래프를 보면 치료건수가 3월부터 약 20건으로 급증하여 이 것이 국가방사선비상진료센터 내의 격리치료병실이 가동되기 시작한 때로 추정되며, 치료환자의 분석시작 시점으로 설정하는 것도 향후 고려됩니다.
 
-```{r access_tx, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Tx_Access, echo=FALSE, message=FALSE, warning=FALSE}
 
 access_raw <- my_read_excel("raw_data/Tx_data","I-131 치료 정보.xlsx",                my_define_col_types(total=17,date=4,numeric=c(5,6)))
 
 access_raw_list <-my_PtID(access_raw)
-access_tx <-access_raw_list$valid_data
-access_tx_invalid <-access_raw_list$invalid_data
-access_tx_invalid <- access_tx_invalid[!is.na(PtID)]
-access_tx<-rbind(access_tx,access_tx_invalid)
-access_tx <- access_tx[, .SD, .SDcols = c("PtID", "환자이름", "치료종류", "투여일", "용량", "회차", "담당과장","수탁병원","비고")]
+Tx_Access <-access_raw_list$valid_data
+Tx_Access_invalid <-access_raw_list$invalid_data
+Tx_Access_invalid <- Tx_Access_invalid[!is.na(PtID)]
+Tx_Access<-rbind(Tx_Access,Tx_Access_invalid)
+Tx_Access <- Tx_Access[, .SD, .SDcols = c("PtID", "환자이름", "치료종류", "투여일", "용량", "회차", "담당과장","수탁병원","비고")]
 
-access_tx_sequence <-my_find_invalid_sequences(access_tx)
+Tx_Access_sequence <-my_find_invalid_sequences(Tx_Access)
 
 # 수탁병원기록이 없거나 "ㅡ"면 refer에 0을 파생
-access_tx[, refer := ifelse(is.na(수탁병원) | 수탁병원 == "ㅡ", 0, 1)]
+Tx_Access[, refer := ifelse(is.na(수탁병원) | 수탁병원 == "ㅡ", 0, 1)]
 
 # 환자단위로 요약
-access_tx_patient <- access_tx[, .(
+Tx_Access_patient <- Tx_Access[, .(
   first = min(투여일, na.rm = TRUE),
   last = max(투여일, na.rm = TRUE),
   cumulative_dose = sum(용량, na.rm = TRUE),
@@ -247,8 +247,8 @@ access_tx_patient <- access_tx[, .(
   refer = sum(refer, na.rm = TRUE)
 ), by = .(PtID, 환자이름)]
 
-access_tx_patient_our <- access_tx_patient[refer == 0]
-access_tx_patient_refer <- access_tx_patient[refer > 0]
+Tx_Access_patient_our <- Tx_Access_patient[refer == 0]
+Tx_Access_patient_refer <- Tx_Access_patient[refer > 0]
 ```
 
 ## Access 데이터베이스
@@ -256,30 +256,30 @@ access_tx_patient_refer <- access_tx_patient[refer > 0]
 ### I-131 치료 정보
 
 -   저자는 핵의학치료를 `I-131 치료 정보` 테이블에 2014년7월9일까지 입력했었습니다.
-    -   `r min(access_tx$투여일, na.rm=TRUE)`부터 `r max(access_tx$투여일, na.rm=TRUE)`까지
-    -   `r nrow(access_tx)`회의 핵의학치료가 입력되어 있었으며,
-    -   환자를 기준으로 하면 `r nrow(access_tx_patient)`명이었고, 입력된 수탁정보를 기준으로
-        -   본원환자는 `r nrow(access_tx_patient_our)`명
-        -   수탁환자는 `r nrow(access_tx_patient_refer)`명이었습니다.
+    -   `r min(Tx_Access$투여일, na.rm=TRUE)`부터 `r max(Tx_Access$투여일, na.rm=TRUE)`까지
+    -   `r nrow(Tx_Access)`회의 핵의학치료가 입력되어 있었으며,
+    -   환자를 기준으로 하면 `r nrow(Tx_Access_patient)`명이었고, 입력된 수탁정보를 기준으로
+        -   본원환자는 `r nrow(Tx_Access_patient_our)`명
+        -   수탁환자는 `r nrow(Tx_Access_patient_refer)`명이었습니다.
 
 ```{r rai_graph, echo=FALSE, message=FALSE, warning=FALSE}
 
-access_tx_투여일별 <- access_tx[, .(n = .N), by = .(투여일)]
-access_tx_실시일별 <- access_tx_투여일별[,실시일:=as.IDate(투여일)]
-setorder(access_tx_실시일별, 실시일)  # 오름차순 정렬
-plots <- my_daily_graphs(access_tx_실시일별)
+Tx_Access_투여일별 <- Tx_Access[, .(n = .N), by = .(투여일)]
+Tx_Access_실시일별 <- Tx_Access_투여일별[,실시일:=as.IDate(투여일)]
+setorder(Tx_Access_실시일별, 실시일)  # 오름차순 정렬
+plots <- my_daily_graphs(Tx_Access_실시일별)
 
 walk(plots, print)
 ```
 
--   그래프를 보면 `r min(access_tx$실시일, na.rm=TRUE)`부터이지만, 1996년 이전은 간헐적으로 입력된 것으로 판단되므로, 경우에 따라서는 1996년부터 분석대상으로 하는 것이 고려될 수 있다.
+-   그래프를 보면 `r min(Tx_Access$실시일, na.rm=TRUE)`부터이지만, 1996년 이전은 간헐적으로 입력된 것으로 판단되므로, 경우에 따라서는 1996년부터 분석대상으로 하는 것이 고려될 수 있다.
 
-```{r rai_tx, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Tx_RAI, echo=FALSE, message=FALSE, warning=FALSE}
 
-access_tx[, 출처 := "access"]
-access_tx[, 투여일 := as.IDate(투여일)]
+Tx_Access[, 출처 := "access"]
+Tx_Access[, 투여일 := as.IDate(투여일)]
 
-rai_raw <-bind_rows(access_tx,ocs_tx)
+rai_raw <-bind_rows(Tx_Access,Tx_OCS)
 
 setorder(rai_raw, PtID, 투여일)
 rai_PtID_투여일<-rai_raw[, `:=`(
@@ -303,15 +303,15 @@ rai_PtID_투여일[, 출처 := fifelse(
   출처
 )]
 
-rai_tx <- rai_PtID_투여일[remove == "N"]
+Tx_RAI <- rai_PtID_투여일[remove == "N"]
 rai_duplicated <- rai_PtID_투여일[remove != "N"]
-rai_pure <- rai_tx[치료종류 != "I-131 MIBG" & 치료종류 != "RIT"]
-non_rai <- rai_tx[치료종류 == "I-131 MIBG" | 치료종류 == "RIT"]
+rai_pure <- Tx_RAI[치료종류 != "I-131 MIBG" & 치료종류 != "RIT"]
+non_rai <- Tx_RAI[치료종류 == "I-131 MIBG" | 치료종류 == "RIT"]
 ```
 
--   Access 데이터베이스의 `r nrow(access_tx)` 건과 OCS 다운로드된 `r nrow(ocs_tx)` 건을 단순히 병합하면 `r nrow(rai_raw)`이지만
+-   Access 데이터베이스의 `r nrow(Tx_Access)` 건과 OCS 다운로드된 `r nrow(Tx_OCS)` 건을 단순히 병합하면 `r nrow(rai_raw)`이지만
 -   중복된 `r nrow(rai_duplicated)` 건을 제외하면
--   총 치료횟수는 `r nrow(rai_tx)` 건이었다.
+-   총 치료횟수는 `r nrow(Tx_RAI)` 건이었다.
 -   치료종류가 `I-131 MIBG` 와 `RIT` 는 `r nrow(non_rai)` 였다.
 -   이를 제외한 Radioactive Iodine Therapy는 `r nrow(rai_pure)` 건 이었다.
 
@@ -334,68 +334,117 @@ emr_raw <- emr_raw[, .(등록일, 등록번호, 성별, 나이, 특기사항, �
 emr_raw[, 등록일 := as.IDate(등록일)]
 ```
 
-```{r emr_tx, echo=FALSE, warning=FALSE, message=FALSE}
+```{r Tx_EMR, echo=FALSE, warning=FALSE, message=FALSE}
 
-emr_tx <- my_parsing_emr_tx(emr_raw)
+Tx_EMR <- my_parsing_Tx_EMR(emr_raw)
 ```
 
 ```{r test}
 
-  dt<-emr_tx
+  dt<-Tx_EMR
 
-  dt[, 투여일 := str_extract(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
+  dt[, TxDate := str_extract(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
   dt[, tx_line := str_remove(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
-  error <- dt[is.na(투여일)]
-  error{, 투여일 :=}
-  dt <- dt[!is.na(투여일)]
-  
+  error <- dt[is.na(TxDate)]
+  error[,TxDate := str_extract(tx_line, "\\d{4}-\\w{2}-\\w{2}")]
+  error[, tx_line := str_remove(tx_line, "\\d{4}-\\w{2}-\\w{2}")]
+  error[,TxDate := str_replace(TxDate, "mm","06")]
+  error[,TxDate := str_replace(TxDate, "dd","15")]
+  error[,TxDate_imputed := TRUE]
+  dt <- dt[!is.na(TxDate)]
+  dt[,TxDate_imputed := FALSE]
+  dt<-rbind(dt,error)
+  dt[, TxDate := as.IDate(TxDate)]
+  Tx_EMR_error_TxDate <- dt[is.na(TxDate)]
+  dt <- dt[!is.na(TxDate)]
 
-  dt[, rhTSH := str_detect(tx_line, "\\brhTSH\\b")]
+  dt[, Tx_rhTSH := str_detect(tx_line, "\\brhTSH\\b")]
   dt[, MIBG := str_detect(tx_line, "\\bMIBG\\b")]
   dt[, tx_line := str_remove(tx_line, "\\brhTSH\\b|\\bMIBG\\b")]
-
-  dt[, combined_agent := str_extract(tx_line, "\\bwith\\b.*?(?=\\s*\\()")]
-  dt[, tx_line := str_remove_all(tx_line, "\\bwith\\b.*?(?=\\s*\\()")]
-  dt[, 치료종류 := fifelse(
+  
+  dt[, combined_agent := str_extract(tx_line, "\\s\\+.*?(?=\\s*\\()")]
+  dt[, tx_line := str_remove(tx_line, "\\s\\+.*?(?=\\s*\\()")]
+  
+  dt[, TxType := fifelse(
     MIBG == TRUE, 
     "I-131 MIBG",  # MIBG가 TRUE인 경우
     fifelse(
       !is.na(combined_agent), 
-      str_c("I-131", combined_agent, sep = " "),  # combined_agent가 NA가 아니면 결합
+      str_c("I-131", combined_agent, sep = ""),  # combined_agent가 NA가 아니면 결합
       "I-131"  # 나머지 경우
     )
   )]
-  emr_tx_type_error <<- dt[is.na(치료종류)]
-  dt <- dt[!is.na(치료종류)]
-
-  dt[, hospital := str_extract(tx_line, "@\\s*.*$")]
-  dt[, tx_line := str_remove_all(tx_line, "@\\s*.*$")]
-
-  dt[, 용량 := str_extract(tx_line, "\\d+\\s*mCi")]
+  dt[, c("MIBG", "combined_agent") := NULL]
+  Tx_EMR_error_TxType <<- dt[is.na(TxType)]
+  dt <- dt[!is.na(TxType)]
+  
+  dt[, TxDose := str_extract(tx_line, "\\d+\\s*mCi")]
   dt[, tx_line := str_remove(tx_line, "\\d+\\s*mCi")]
-  dt[, 용량 := as.numeric(str_remove(용량, " mCi"))]
-  emr_tx_용량_error <<- dt[is.na(용량)]
-  dt <- dt[!is.na(용량)]
-    
+  dt[, TxDose := as.numeric(str_remove(TxDose, " mCi"))]
+  Tx_EMR_error_TxDose <<- dt[is.na(TxDose)]
+  dt <- dt[!is.na(TxDose)]
+  
   dt[, tx_details := str_extract(tx_line, "\\(.*?\\)")]
-  dt[, tx_line := str_remove(tx_line, "\\(.*?\\)")]
+  dt[, tx_line := str_remove(tx_line, "\\(.*?\\)")] 
+  
+  dt[, outsideH := str_extract(tx_line, "@\\s*.*$")]
+  dt[, tx_line := str_remove(tx_line, "@\\s*.*$")]
 
-  # 1. "(#회차," 전체 추출 및 tx_details에서 삭제
+  
+```
+
+```{r test2}
+
+  dt[, tx_details := str_remove(tx_details, "[()]")]
+
+  # #\d\. 패턴이 있는 행을 Tx_EMR_error_period로 분리
+  Tx_EMR_error_period <- dt[str_detect(tx_details, "#\\d\\.")]
+
+  # 원본 데이터에서 해당 행 제거
+  dt <- dt[!str_detect(tx_details, "#\\d\\.")]
+  
+Tx_EMR_error_period2 <- dt[str_detect(tx_details, "([A-Za-z\\+\\-])\\.")]
+dt <- dt[!str_detect(tx_details, "([A-Za-z\\+\\-])\\.")]
+
+
+
+
+    # 1. "(#회차," 전체 추출 및 tx_details에서 삭제
   dt[, full_match := str_extract(tx_details, "\\(#\\d+")]
   dt[, tx_details := str_remove(tx_details, "\\(#\\d+")]
 
   # 2. 회차 정보만 추출
-  dt[, 회차 := as.integer(str_extract(full_match, "\\d+"))]
+  dt[, TxNumber := as.integer(str_extract(full_match, "\\d+"))]
 
-  emr_tx_회차_error <<- dt[is.na(회차)]
-  dt <- dt[!is.na(회차)]
+  Tx_EMR_error_TxNumber <<- dt[is.na(TxNumber)]
+  dt <- dt[!is.na(TxNumber)]
 
-  dt[, scan := fifelse(
-    str_starts(tx_details, ","), 
-    str_extract(tx_details, "^,\\s*[^,]+,"),  # 시작이 ","일 때 다음 ","까지 추출
-   str_extract(tx_details, "^[^,]+,")        # 시작이 ","가 아닐 때 처음부터 ","까지 추출
-  )]
- 
+# 1단계: 시작이 ","라면 제거
+dt[, tx_details := fifelse(
+  str_starts(tx_details, ","), 
+  str_remove(tx_details, "^,\\s*"),  # ","로 시작하는 경우 제거
+  tx_details
+)]
+   
+ # 2단계: 처음부터 ","를 만날 때까지 추출
+dt[, Tx_WBS := str_extract(tx_details, "^[^,]+")]
+
+
+
+
+```
+
+```{r test3}
+
+
+
+
+
+
+
+
+
+
 
 
 ```
