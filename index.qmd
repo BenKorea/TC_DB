@@ -56,12 +56,9 @@ I-131 치료정보를 구하는 방법은 몇 가지가 있겠지만 이 글에�
 
 -   핵의학체내/검사결과관리/판독소견조회 메뉴에서 접수일자를 설정하고 검사실을 감마카메라실로 설정하여 진행합니다.
 
--   이 때 접수일자기간을 너무 길게 설정하면 오류가 나므로 3개월에서 6개월 정도가 적당해 보입니다.
-    하지만 특정분기에는 검사 건수가 많아 3개월 단위로 다운로드 하는 것이 제일 안전합니다.
+-   이 때 접수일자기간을 너무 길게 설정하면 오류가 나므로 3개월에서 6개월 정도가 적당해 보입니다. 하지만 특정분기에는 검사 건수가 많아 3개월 단위로 다운로드 하는 것이 제일 안전합니다.
 
--   조회가 완료되면 좌하측의 "조회내역출력"버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다.
-    페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다.
-    csv 파일형식을 지원하지 않으므로 "Microsoft Excel 파일 (\*.xls)로 진행하면 됩니다.
+-   조회가 완료되면 좌하측의 "조회내역출력"버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다. 페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다. csv 파일형식을 지원하지 않으므로 "Microsoft Excel 파일 (\*.xls)로 진행하면 됩니다.
 
 -   보고서 형식 유지는 불필요하므로 선택을 해제하고 진행하면 됩니다.
 
@@ -89,15 +86,13 @@ HD074 <- HD074_NM[!(요일 %in% "월요일")]
 
 #### 항목코드 HD074 선별
 
-I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다.
-최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는
+I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다. 최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는
 
 -   항목코드: `HD074`
 
 -   항목명: `체내섭취평가 전신스캔 방법`
 
-을 특정시점부터 사용하고 있습니다.
-그래서 가장 최신의 코드인 `HD074` 부터 우선 선별하고 원하는 자료가 맞는지 검증을 진행하였습니다.
+을 특정시점부터 사용하고 있습니다. 그래서 가장 최신의 코드인 `HD074` 부터 우선 선별하고 원하는 자료가 맞는지 검증을 진행하였습니다.
 
 -   기간: `r min(HD074$실시일, na.rm=TRUE)` \~ `r max(HD074$실시일, na.rm=TRUE)`
 
@@ -304,7 +299,7 @@ rai_PtID_투여일[, 출처 := fifelse(
   ((!is.na(다음투여일_차이) & 다음투여일_차이 < 8) | 
    (!is.na(이전투여일_차이) & 이전투여일_차이 < 8)) & 
    출처 == "access",
-  paste(출처, "OCR"),
+  paste(출처, "OCS"),
   출처
 )]
 
@@ -312,6 +307,19 @@ Tx_RAI <- rai_PtID_투여일[remove == "N"]
 rai_duplicated <- rai_PtID_투여일[remove != "N"]
 rai_pure <- Tx_RAI[치료종류 != "I-131 MIBG" & 치료종류 != "RIT"]
 non_rai <- Tx_RAI[치료종류 == "I-131 MIBG" | 치료종류 == "RIT"]
+```
+
+```{r rai_pure, echo=FALSE, message=FALSE, warning=FALSE}
+
+setnames(rai_pure, old = "환자이름", new = "PtName")
+setnames(rai_pure, old = "치료종류", new = "TxType")
+setnames(rai_pure, old = "투여일", new = "TxDate")
+setnames(rai_pure, old = "용량", new = "TxDose")
+setnames(rai_pure, old = "회차", new = "TxNumber")
+setnames(rai_pure, old = "수탁병원", new = "referH")
+setnames(rai_pure, old = "출처", new = "source")
+setnames(rai_pure, old = "비고", new = "memo")
+
 ```
 
 -   Access 데이터베이스의 `r nrow(Tx_Access)` 건과 OCS 다운로드된 `r nrow(Tx_OCS)` 건을 단순히 병합하면 `r nrow(rai_raw)`이지만
@@ -325,26 +333,25 @@ non_rai <- Tx_RAI[치료종류 == "I-131 MIBG" | 치료종류 == "RIT"]
 rai_temp <- copy(rai_pure)
 
 rai_patient <-rai_temp[, .(
-  first = as.Date(min(투여일, na.rm = TRUE)),
-  last = as.Date(max(투여일, na.rm = TRUE)),
+  first = as.Date(min(TxDate, na.rm = TRUE)),
+  last = as.Date(max(TxDate, na.rm = TRUE)),
   count = .N,
   refer = sum(refer, na.rm = TRUE)
-), by = .(PtID, 환자이름)]
+), by = .(PtID, PtName)]
 ```
+
 
 ```{r EMR_raw, echo=FALSE, warning=FALSE, message=FALSE}
 
 EMR_raw<- my_read_excel_list("raw_data","관심환자")
-EMR_raw <- EMR_raw[, .(등록일, 등록번호, 성별, 나이, 특기사항, 분류명)]
+EMR_raw <- EMR_raw[, .(등록일, 등록번호, `성 명`, 성별, 나이, 특기사항, 분류명)]
 EMR_raw[, 등록일 := as.IDate(등록일)]
 ```
 
 ```{r Tx_EMR, echo=FALSE, warning=FALSE, message=FALSE}
 
 Tx_EMR <- my_parsing_Tx_EMR(EMR_raw)
-```
 
-```{r test}
 
   dt<-Tx_EMR
 
@@ -395,68 +402,109 @@ Tx_EMR <- my_parsing_Tx_EMR(EMR_raw)
   dt[, outsideH := str_extract(tx_line, "@\\s*.*$")]
   dt[, tx_line := str_remove(tx_line, "@\\s*.*$")]
 
+
+  dt[, c("TxNumber", "TxWBS", "Tg_TFT", "TxTgAb") := tstrsplit(tx_details, ",", fixed = TRUE)]
+
+  dt[, TxNumber := as.numeric(str_extract(TxNumber, "\\d"))]
   
+  dt[is.na(Tg_TFT), TxTg_binary := "NA"]
+  dt[str_detect(Tg_TFT, "Tg\\s*NA"), TxTg_binary := "NA"]
+  dt[, Tg_TFT := str_remove(Tg_TFT, "Tg\\s*NA")]
+
+  dt[str_detect(Tg_TFT, "Tg\\s*-"), TxTg_binary := "negative"]
+  dt[, Tg_TFT := str_remove(Tg_TFT, "Tg\\s*-")]
+  
+  dt[str_detect(Tg_TFT, "Tg\\s*\\+"), TxTg_binary := "positive"]
+  dt[, Tg_TFT := str_remove(Tg_TFT, "Tg\\s*\\+")]
+
+  dt[, Tg1 := str_extract(Tg_TFT, "(?<=Tg )\\d+\\.?\\d*")]
+  dt[, Tg_TFT := str_remove(Tg_TFT, "(?<=Tg )\\d+\\.?\\d*")]
+
+  dt[, TFT := str_extract(Tg_TFT, "(?<=Tg/TgAb/TSH ).*?(?=\\))")]
+  dt[, c("Tg2", "TgAb", "TSH") := tstrsplit(TFT, "/", fixed = TRUE)]
+  
+  dt[str_detect(Tg2, "ND|NA"), TxTg_binary := "NA"]
+
+  dt[str_detect(Tg2, "-"), TxTg_binary := "negative"]
+  dt[str_detect(Tg2, "\\+"), TxTg_binary := "positive"]
+  
+  dt[, TxTg := as.numeric(Tg1)]
+  dt[, Tg2 := as.numeric(Tg2)]
+  dt[, TxTg := ifelse(is.na(TxTg), Tg2, TxTg)]
+  
+  dt[!is.na(TxTg), TxTg_binary := "positive"]
+  
+  Tx_EMR_error_TxTg_binary <- dt[is.na(TxTg_binary)]
+
 ```
 
-```{r test2}
+```{r Tx_EMR_error, echo=FALSE, warning=FALSE, message=FALSE}
 
-  dt[, tx_details := str_remove(tx_details, "[()]")]
+dt_TxDate별 <- dt[, .(n = .N), by = .(TxDate)]
+setnames(dt_TxDate별, old = "TxDate", new = "실시일")
+setorder(dt_TxDate별, 실시일)  # 오름차순 정렬
+plots<-my_daily_graphs(dt_TxDate별)
+walk(plots, print)
+```
 
-  # #\d\. 패턴이 있는 행을 Tx_EMR_error_period로 분리
-  Tx_EMR_error_period <- dt[str_detect(tx_details, "#\\d\\.")]
+```{r combining, echo=FALSE, message=FALSE, warning=FALSE}
 
-  # 원본 데이터에서 해당 행 제거
-  dt <- dt[!str_detect(tx_details, "#\\d\\.")]
-  
-Tx_EMR_error_period2 <- dt[str_detect(tx_details, "([A-Za-z\\+\\-])\\.")]
-dt <- dt[!str_detect(tx_details, "([A-Za-z\\+\\-])\\.")]
+combine <- dt[!is.na(TxTg_binary),]
+combine <- combine[, .SD, .SDcols = c("등록번호","성 명","TxDate","TxType","TxDose","TxNumber","outsideH","TxWBS","TxTg","TxTg_binary")]
 
+setnames(combine, old = "등록번호", new = "PtID")
+setnames(combine, old = "성 명", new = "PtName")
+combine[,source := "EMR"]
 
+Tx <- rbind(rai_pure, combine[TxType != "I-131 MIBG",], fill=TRUE)
+```
 
+```{r duplication_check_2, echo=FALSE, message=FALSE, warning=FALSE}
 
-    # 1. "(#회차," 전체 추출 및 tx_details에서 삭제
-  dt[, full_match := str_extract(tx_details, "\\(#\\d+")]
-  dt[, tx_details := str_remove(tx_details, "\\(#\\d+")]
+setorder(Tx, PtID, TxDate)
+Tx_PtID_TxDate<-Tx[, `:=`(
+  다음TxDate_차이 = as.numeric(difftime(shift(TxDate, type = "lead"), TxDate, units = "days")),
+  이전TxDate_차이 = as.numeric(difftime(TxDate, shift(TxDate, type = "lag"), units = "days"))
+), by = PtID]
 
-  # 2. 회차 정보만 추출
-  dt[, TxNumber := as.integer(str_extract(full_match, "\\d+"))]
-
-  Tx_EMR_error_TxNumber <<- dt[is.na(TxNumber)]
-  dt <- dt[!is.na(TxNumber)]
-
-# 1단계: 시작이 ","라면 제거
-dt[, tx_details := fifelse(
-  str_starts(tx_details, ","), 
-  str_remove(tx_details, "^,\\s*"),  # ","로 시작하는 경우 제거
-  tx_details
+Tx_PtID_TxDate[, remove := fifelse(
+  ((!is.na(다음TxDate_차이) & 다음TxDate_차이 < 8) |
+   (!is.na(이전TxDate_차이) & 이전TxDate_차이 < 8)) & source != "EMR",
+  "Y",
+  "N"
 )]
-   
- # 2단계: 처음부터 ","를 만날 때까지 추출
-dt[, Tx_WBS := str_extract(tx_details, "^[^,]+")]
 
 
+Tx_PtID_TxDate[, source := fifelse(
+  ((!is.na(다음TxDate_차이) & 다음TxDate_차이 < 8) | 
+   (!is.na(이전TxDate_차이) & 이전TxDate_차이 < 8)) & 
+   source != "EMR",
+  paste(source, "EMR"),
+  source
+)]
 
-
-```
-
-```{r test3}
-
-
-
-
-
-
-
-
-
-
+Tx_RAI <- Tx_PtID_TxDate[remove == "N"]
+Tx_duplicated <- Tx_PtID_TxDate[remove != "N"]
 
 
 ```
+
+```{r Tx_grouped, echo=FALSE, message=FALSE, warning=FALSE}
+
+rai_patient_data <- Tx_RAI[, .(
+  first = min(TxDate),          # TxDate의 최소값
+  last = max(TxDate),           # TxDate의 최대값
+  refer = sum(refer),           # refer 합계
+  TxNumber = .N                 # TxNumber 개수 (행 개수)
+), by = .(PtID)]
+
+```
+
 
 ```{r end, echo=FALSE}
 
 ```
+
 
 ```{r prescription, echo=FALSE}
 
@@ -487,7 +535,7 @@ setnames(t4_data, old = "등록번호", new = "PtID")
 # 나이에 있는 "세"를 제거하고 정수형으로 변환
 EMR_raw$나이 <- as.integer(sub("세", "", EMR_raw$나이))
 setnames(EMR_raw, old="등록번호", new="PtID")
-birthday_data <- my_parsing_birthday_data (emr_raw)
+birthday_data <- my_parsing_birthday_data (EMR_raw)
 ```
 
 ```{r risk_data, echo=FALSE, warning=FALSE, message=FALSE}
@@ -532,25 +580,28 @@ c73_op_data <- c73_data[!is.na(최초진단일) |!is.na(수술일) | !is.na(갑�
 ```{r patient, echo=FALSE, message=FALSE, warning=FALSE}
 
 
-# directory<-"raw_data/Tx_data"
-# file_name<-"Patient.xlsx"
-# file_path<-file.path(project_path,directory,file_name)
-# col_types <- rep("text", 19)
-# col_types[c(7,10,19)]<-"date"
-# patient_data <- as.data.table(read_xlsx(file_path, col_types = col_types))
-# 
-# patient_data<-select(patient_data, PtID, PtName, Dx, ICDcode, ExpiredDay, FollowUpDay, Protocol)
-# 
-# patient_data <- patient_data %>%
-#   filter(grepl("Thy|thy", Dx, ignore.case = TRUE) | grepl("C73", ICDcode) | grepl("Thyroid|thyroid|iodine|131", Protocol))
-# 
-# patient_data <- my_PtID(patient_data)
-# 
-# merged_data <- merge(c73_data, patient_data, by = "PtID", all.x = TRUE)
-# 
-# patient_data <- select(merged_data, -PtName, -ICDcode)
-# 
-# rm(c73_data,c73_raw_data,merged_data, patient_raw_data)
+directory<-"raw_data/Tx_data"
+file_name<-"Patient.xlsx"
+file_path<-file.path(project_path,directory,file_name)
+col_types <- rep("text", 19)
+col_types[c(7,10,19)]<-"date"
+patient_data <- as.data.table(read_xlsx(file_path, col_types = col_types))
+
+patient_data<-select(patient_data, PtID, PtName, Dx, ICDcode, ExpiredDay, FollowUpDay, Protocol)
+
+patient_data <- patient_data %>%
+  filter(grepl("Thy|thy", Dx, ignore.case = TRUE) | grepl("C73", ICDcode) | grepl("Thyroid|thyroid|iodine|131", Protocol))
+
+patient_data <- my_PtID(patient_data)
+patient_data<-patient_data$valid_data
+
+setnames(c73_data, old = "등록번호", new = "PtID")
+
+merged_data <- merge(c73_data, patient_data, by = "PtID", all.x = TRUE)
+
+patient_data <- select(merged_data, -PtName, -ICDcode)
+
+rm(c73_data,c73_raw_data,merged_data, patient_raw_data)
 
 ```
 
@@ -572,12 +623,12 @@ rai_patient_data$refer <- ifelse(
 na_number_rai_patient_data_refer2<-sum(is.na(rai_patient_data$refer))
 other_number_rai_patient_data_refer2<-table(rai_patient_data$refer)
 
-tx_1_t4_1<-rai_patient_data %>% filter(count==1&count_t4==1)
+tx_1_t4_1<-rai_patient_data %>% filter(TxNumber==1&count_t4==1)
 
 na_number_tx_1_t4_1_refer<-sum(is.na(tx_1_t4_1$refer))
 other_number_tx_1_t4_1_refer<-table(tx_1_t4_1$refer)
 
-rai_patient_data$refer <- ifelse((rai_patient_data$count==1&rai_patient_data$count_t4==1),"1",rai_patient_data$refer)
+rai_patient_data$refer <- ifelse((rai_patient_data$TxNumber==1&rai_patient_data$count_t4==1),"1",rai_patient_data$refer)
 
 na_number_rai_patient_data_refer3<-sum(is.na(rai_patient_data$refer))
 other_number_rai_patient_data_refer3<-table(rai_patient_data$refer)
