@@ -1,5 +1,5 @@
 ################################################################################
-## my_functions_for_emr_tx
+## my_functions_for_Tx_EMR
 ################################################################################
 my_splilt_lines_for_Tx_EMR <- function(dt) {
   
@@ -22,36 +22,88 @@ my_splilt_lines_for_Tx_EMR <- function(dt) {
   return(dt)
 }
 
-my_parsing_tx_line <- function(dt) {
+my_parsing_Tx_EMR_tx_line <- function(dt) {
   
-  dt[, c("tx_date", "remained") := tstrsplit(tx_line, "\\s+", fixed = FALSE, fill = NA, type.convert = TRUE, keep = 2)]
+  dt[, TxDate := str_extract(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
+  dt[, tx_line := str_remove(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
+  error <- dt[is.na(TxDate)]
+  error[,TxDate := str_extract(tx_line, "\\d{4}-\\w{2}-dd")]
+  error[, tx_line := str_remove(tx_line, "\\d{4}-\\w{2}-dd")]
+  error[,TxDate := str_replace(TxDate, "mm","06")]
+  error[,TxDate := str_replace(TxDate, "dd","15")]
+  error[,TxDate_imputed := TRUE]
+  dt <- dt[!is.na(TxDate)]
+  dt[,TxDate_imputed := FALSE]
+  dt<-rbind(dt,error)
+  dt[, TxDate := as.IDate(TxDate)]
+  Tx_EMR_error_TxDate <<- dt[is.na(TxDate)]
+  dt <- dt[!is.na(TxDate)]
   
-  dt$tx_type <- tstrsplit(dt$tx_line, "\\s+", fixed = FALSE, fill = NA, type.convert = TRUE)[[2]]
-  dt$tx_dose <- tstrsplit(dt$tx_line, "\\s+", fixed = FALSE, fill = NA, type.convert = TRUE)[[3]]
-  # "PCNA (+)"가 있으면 dt$PCNA를 "Positiv"로 파생  
-  dt$PCNA <- ifelse(grepl("PCNA \\(\\+\\)", dt$cN_line), "Positive", NA)
-  # &가 있으면 이후를 PETCT_part로 파생
-  dt$PETCT_part <- ifelse(grepl("&", dt$cN_line), sub(".*&\\s*", "", dt$cN_line), NA)
-  dt$PETCT_date <- tstrsplit(dt$PETCT_part, "\\s+", fixed = FALSE, fill = NA, type.convert = TRUE)[[1]]  
-  dt$Thyroid_SUVmax <- tstrsplit(dt$PETCT_part, "\\s+", fixed = FALSE, fill = NA, type.convert = TRUE)[[3]]
-  dt$Thyroid_SUVmax <- sub("Thyroid=", "", dt$Thyroid_SUVmax)
-  dt$Thyroid_SUVmax <- sub(",", "", dt$Thyroid_SUVmax)
-  dt$PETCT_Metastasis <- tstrsplit(dt$PETCT_part, "\\s+", fixed = FALSE, fill = NA, type.convert = TRUE)[[4]]
-  dt$PETCT_Metastasis_SUVmax <- tstrsplit(dt$PETCT_part, "\\s+", fixed = FALSE, fill = NA, type.convert = TRUE)[[5]]
-  dt$PETCT_Metastasis<-paste0(dt$PETCT_Metastasis,".",dt$PETCT_Metastasis_SUVmax)
-  dt$PETCT_Metastasis_SUVmax <- ifelse(grepl("=", dt$PETCT_Metastasis), sub(".*=\\s*", "", dt$PETCT_Metastasis), NA)
-  dt$PETCT_Metastasis <- ifelse(grepl("=", dt$PETCT_Metastasis), sub("\\s*=.*", "", dt$PETCT_Metastasis), NA)
+  dt[, Tx_rhTSH := str_detect(tx_line, "\\brhTSH\\b")]
+  dt[, MIBG := str_detect(tx_line, "\\bMIBG\\b")]
+  dt[, tx_line := str_remove(tx_line, "\\brhTSH\\b|\\bMIBG\\b")]
   
-  dt[, cN_date := as.Date(cN_date, format="%Y-%m-%d", try = TRUE)]
-  if (input_error_checking_mode == "Y") {
-    risk_data_cN_date_error <<- dt[is.na(cN_date) & line_count==3]
-  }
-  dt <- dt[!(is.na(cN_date) & line_count==3)]
+  dt[, combined_agent := str_extract(tx_line, "\\s\\+.*?(?=\\()")]
+  dt[, tx_line := str_remove(tx_line, "\\s\\+.*?(?=\\s*\\()")]
   
-  if (input_error_checking_mode == "Y") {
-    risk_data_cN_error <<- dt[!cN %in% c("cN0", "cN1a", "cN1b", "cN1", NA,"pN0", "pN1a", "pN1b", "pN1")]
-  }
-  dt <- dt[cN %in% c("cN0", "cN1a", "cN1b", "cN1", NA,"pN0", "pN1a", "pN1b", "pN1")]
+  dt[, TxType := fifelse(
+    MIBG == TRUE, 
+    "I-131 MIBG",  # MIBG가 TRUE인 경우
+    fifelse(
+      !is.na(combined_agent), 
+      str_c("I-131", combined_agent, sep = ""),  # combined_agent가 NA가 아니면 결합
+      "I-131"  # 나머지 경우
+    )
+  )]
+  dt[, c("MIBG", "combined_agent") := NULL]
+  Tx_EMR_error_TxType <<- dt[is.na(TxType)]
+  dt <- dt[!is.na(TxType)]
+  
+  dt[, TxDose := str_extract(tx_line, "\\d+\\s*mCi")]
+  dt[, tx_line := str_remove(tx_line, "\\d+\\s*mCi")]
+  dt[, TxDose := as.numeric(str_remove(TxDose, " mCi"))]
+  Tx_EMR_error_TxDose <<- dt[is.na(TxDose)]
+  # dt <- dt[!is.na(TxDose)] # 분석에 포함시키기 위해 주석 처리석
+  
+  dt[, tx_details := str_extract(tx_line, "\\(.*?\\)")]
+  dt[, tx_line := str_remove(tx_line, "\\(.*?\\)")] 
+  
+  dt[, outsideH := str_extract(tx_line, "@\\s*.*$")]
+  dt[, tx_line := str_remove(tx_line, "@\\s*.*$")]
+  
+  
+  dt[, c("TxNumber", "TxWBS", "Tg_TFT", "TxTgAb") := tstrsplit(tx_details, ",", fixed = TRUE)]
+  
+  dt[, TxNumber := as.numeric(str_extract(TxNumber, "\\d"))]
+  
+  dt[is.na(Tg_TFT), TxTg_binary := "NA"]
+  dt[str_detect(Tg_TFT, "Tg\\s*NA"), TxTg_binary := "NA"]
+  dt[, Tg_TFT := str_remove(Tg_TFT, "Tg\\s*NA")]
+  
+  dt[str_detect(Tg_TFT, "Tg\\s*-"), TxTg_binary := "negative"]
+  dt[, Tg_TFT := str_remove(Tg_TFT, "Tg\\s*-")]
+  
+  dt[str_detect(Tg_TFT, "Tg\\s*\\+"), TxTg_binary := "positive"]
+  dt[, Tg_TFT := str_remove(Tg_TFT, "Tg\\s*\\+")]
+  
+  dt[, Tg1 := str_extract(Tg_TFT, "(?<=Tg )\\d+\\.?\\d*")]
+  dt[, Tg_TFT := str_remove(Tg_TFT, "(?<=Tg )\\d+\\.?\\d*")]
+  
+  dt[, TFT := str_extract(Tg_TFT, "(?<=Tg/TgAb/TSH ).*?(?=\\))")]
+  dt[, c("Tg2", "TgAb", "TSH") := tstrsplit(TFT, "/", fixed = TRUE)]
+  
+  dt[str_detect(Tg2, "ND|NA"), TxTg_binary := "NA"]
+  
+  dt[str_detect(Tg2, "-"), TxTg_binary := "negative"]
+  dt[str_detect(Tg2, "\\+"), TxTg_binary := "positive"]
+  
+  dt[, TxTg := as.numeric(Tg1)]
+  dt[, Tg2 := as.numeric(Tg2)]
+  dt[, TxTg := ifelse(is.na(TxTg), Tg2, TxTg)]
+  
+  dt[!is.na(TxTg), TxTg_binary := "positive"]
+  
+  Tx_EMR_error_TxTg_binary <- dt[is.na(TxTg_binary)]
   
   return(dt)
 }
@@ -64,6 +116,7 @@ my_parsing_Tx_EMR<-function(dt) {
   dt[, 시행일 := as.IDate(등록일, format="%Y-%m-%d")]
   
   dt <- my_splilt_lines_for_Tx_EMR(dt)
+  dt <- my_parsing_Tx_EMR_tx_line(dt)
 
   return(dt)
   

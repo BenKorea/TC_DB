@@ -1,0 +1,153 @@
+---
+title: "Untitled"
+format: html
+---
+
+```{r prescription, echo=FALSE}
+
+raw_data_directory<-"raw_data/Prescription_data"
+project_path <<- getwd()
+raw_data_path <<- file.path(project_path, raw_data_directory)
+pattern <- "갑상선호르몬_처방현황"
+
+t4_data <- load_levothyroxine_data(raw_data_path, pattern)
+t4_data$처방일자 <-as.Date(t4_data$처방일자)
+t4_data$수량 <-as.numeric(t4_data$수량)
+
+t4_data <- t4_backup<-t4_data %>%
+  group_by(등록번호, 환자명) %>%
+  summarise(
+    first_t4 = min(처방일자),
+    last_t4 = max(처방일자),
+    total_t4 = sum(수량),
+    count_t4 = n(),
+    .groups = "drop"
+  )
+
+setnames(t4_data, old = "등록번호", new = "PtID")
+```
+
+```{r birthday_data, echo=FALSE, warning=FALSE, message=FALSE}
+
+# 나이에 있는 "세"를 제거하고 정수형으로 변환
+EMR_raw$나이 <- as.integer(sub("세", "", EMR_raw$나이))
+setnames(EMR_raw, old="등록번호", new="PtID")
+birthday_data <- my_parsing_birthday_data (EMR_raw)
+```
+
+```{r risk_data, echo=FALSE, warning=FALSE, message=FALSE}
+
+risk_data <- my_parsing_risk_data (EMR_raw)
+```
+
+```{r response_data, echo=FALSE, warning=FALSE, message=FALSE}
+
+response_data <- my_parsing_response_data (EMR_raw)
+```
+
+```{r c73, echo=FALSE}
+
+
+directory<-"raw_data/Tx_data"
+file_name<-"갑상선암 정보.xlsx"
+file_path<-file.path(project_path,directory,file_name)
+col_types <- rep("text", 59)
+col_types[c(2,6,9,40,41,44,58)]<-"date"
+c73_raw_data <- as.data.table(read_xlsx(file_path, col_types = col_types))
+
+c73_data <- c73_raw_data[, lapply(.SD, function(col) if (!all(is.na(col))) col), .SDcols = names(c73_raw_data)]
+# c73_data<-my_PtID(c73_data)
+c73_data <- c73_data %>%
+  mutate(
+    수술과최초진단일일치 = !is.na(수술일) & !is.na(최초진단일) & (수술일 == 최초진단일)
+  )
+c73_op_data <- c73_data[!is.na(최초진단일) |!is.na(수술일) | !is.na(갑상선제거방법)]
+
+```
+
+### C73 수술정보
+
+-   저자는 MS Access를 이용하여 방사성요오드 치료에 대한 데이터베이스를 구축하였었다. 이 자료 중에는 `갑상선암 정보`라는 환자정보에 해당하는 테이블이 있었다.
+-   등록번호가 5자리 미만이거나 8자리 초과는 오류이므로 삭제한 후 정리해보면
+-   수술일을 기준으로 `r min(c73_data$수술일, na.rm=TRUE)`부터 `r max(c73_data$수술일, na.rm=TRUE)` 까지의 `r nrow(c73_data)` 명의 갑상선암 상병명을 가진 환자들의 수술 정보들이 입력되어 있다.
+-   최초진단일 입력건수는 `r sum(!is.na(c73_data$최초진단일))` 이었고, 수술일 입력건수는 `r sum(!is.na(c73_data$수술일))`, 둘 중 하나라도 입력된 건수는 `r sum(!is.na(c73_data$최초진단일) | !is.na(c73_data$수술일))`이었다.
+-   갑상선제거방법 입력건수는 `r sum(!is.na(c73_data$갑상선제거방법))`이었다.
+-   최초진단일만 입력된 경우가 상당수이긴 하지만 후술하는 치료가 된 환자들의 수술정보가 얼마나 매칭되는지가 관심이므로 일단락한다.
+
+```{r patient, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+directory<-"raw_data/Tx_data"
+file_name<-"Patient.xlsx"
+file_path<-file.path(project_path,directory,file_name)
+col_types <- rep("text", 19)
+col_types[c(7,10,19)]<-"date"
+patient_data <- as.data.table(read_xlsx(file_path, col_types = col_types))
+
+patient_data<-select(patient_data, PtID, PtName, Dx, ICDcode, ExpiredDay, FollowUpDay, Protocol)
+
+patient_data <- patient_data %>%
+  filter(grepl("Thy|thy", Dx, ignore.case = TRUE) | grepl("C73", ICDcode) | grepl("Thyroid|thyroid|iodine|131", Protocol))
+
+patient_data <- my_PtID(patient_data)
+patient_data<-patient_data$valid_data
+
+setnames(c73_data, old = "등록번호", new = "PtID")
+
+merged_data <- merge(c73_data, patient_data, by = "PtID", all.x = TRUE)
+
+patient_data <- select(merged_data, -PtName, -ICDcode)
+
+rm(c73_data,c73_raw_data,merged_data, patient_raw_data)
+
+```
+
+```{r tx_data_merge, echo=FALSE}
+
+rai_patient_data <- merge(patient_data, t4_data, by = "PtID", all.x = TRUE)
+
+na_number_rai_patient_data_refer<-sum(is.na(rai_patient_data$refer))
+other_number_rai_patient_data_refer<-table(rai_patient_data$refer)
+
+last_t4_na_20000711<-rai_patient_data %>% filter(as.Date(rai_patient_data$last) > as.Date("2000-07-11") & is.na(rai_patient_data$last_t4))
+
+na_number_last_t4_na_20000711_refer<-sum(is.na(last_t4_na_20000711$refer))
+other_number_last_t4_na_20000711_refer<-table(last_t4_na_20000711$refer)
+
+rai_patient_data$refer <- ifelse(
+  as.Date(rai_patient_data$last) > as.Date("2000-07-11") & is.na(rai_patient_data$last_t4), "1", rai_patient_data$refer)
+
+na_number_rai_patient_data_refer2<-sum(is.na(rai_patient_data$refer))
+other_number_rai_patient_data_refer2<-table(rai_patient_data$refer)
+
+tx_1_t4_1<-rai_patient_data %>% filter(TxNumber==1&count_t4==1)
+
+na_number_tx_1_t4_1_refer<-sum(is.na(tx_1_t4_1$refer))
+other_number_tx_1_t4_1_refer<-table(tx_1_t4_1$refer)
+
+rai_patient_data$refer <- ifelse((rai_patient_data$TxNumber==1&rai_patient_data$count_t4==1),"1",rai_patient_data$refer)
+
+na_number_rai_patient_data_refer3<-sum(is.na(rai_patient_data$refer))
+other_number_rai_patient_data_refer3<-table(rai_patient_data$refer)
+
+rai_refer<-rai_patient_data %>% filter(as.numeric(refer)>0)
+rai_no_refer<-rai_patient_data %>% filter(as.numeric(refer)==0|is.na(refer))
+rai_no_refer_followup <- rai_no_refer %>% filter(!is.na(last_t4))
+rai_no_refer_no_followup <- rai_no_refer %>% filter(is.na(last_t4))
+```
+
+### Levothyroxine 처방통계
+
+-   약품별 처방통계로부터 다운로드하여 followupdate 결정에 사용
+-   (다운로드 가능했던) 처방기간은 `r min(t4_data$first_t4, na.rm=TRUE)`부터 `r max(t4_data$last_t4, na.rm=TRUE)`
+-   rai_patient_data 환자들은 `r nrow(rai_patient_data)`명이었고
+-   치료환자 중 `r min(t4_data$first_t4, na.rm=TRUE)` 이후의 T4 처방기록이 없는 `r nrow(last_t4_na_20000711)`명은 수탁환자로 분류하였다.
+-   치료기록이 1회이면서 처방기록도 1회인 `r nrow(tx_1_t4_1)`경우도 수탁환자로 분류하였다.
+-   수탁으로 분류된 환자수는 `r nrow(rai_refer)`명이었고 이를 제외한 환자=본원환자수는 `r nrow(rai_no_refer)`이었다.
+    -   본원환자라고 분류된 환자들 중 T4 처방기록이 있는 경우는 `r nrow(rai_no_refer_followup)`명이었고,
+    -   처방기록이 없는 경우는 `r nrow(rai_no_refer_no_followup)`명이었는데, 후자는 2000년 7월 11일 이전의 수탁이나 기록이 없거나 2000년 7월 11일 이전에 follow up loss되어 T4 처방이 없는 환자로 판단된다.
+
+## 저자의 환자
+
+-   예후/추척관찰 정보는 저자의 외래환자들에 대해 EMR 관심환자에 입력되어 있다.
+-   이는 핵의학 전체환자로 확장하기 전에 pilot 성격을 가진다.
