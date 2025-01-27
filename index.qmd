@@ -13,7 +13,6 @@ manusctipt_mode<-"N"
 input_error_checking_mode<-"Y"
 ```
 
-
 ```{r library, echo=FALSE, message=FALSE}
 
 library(data.table)
@@ -39,15 +38,21 @@ load_source_files <- function (source_folder) {
 load_source_files("source")
 ```
 
-```{r Gamma, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Gamma, echo=FALSE, results='hide'}
 
-Gamma_raw<- my_read_excel_list("raw_data/Gamma_data","Gamma")
+Gamma<- my_read_excel_list("raw_data/Gamma_data","Gamma")
 
-Gamma <- Gamma_raw[, .SD, .SDcols = c("등록번호","성명","처방일","진료과","진료과명","항목코드","항목명","실시일시")]
-Gamma[, 처방일 := as.IDate(처방일, format = "%Y%m%d")]
-Gamma[, 실시일 := as.IDate(실시일시, format = "%Y%m%d")][, 실시일시 := NULL]
-Gamma[, 요일 := weekdays(실시일)]
+Gamma <- Gamma[, .(등록번호,성명,진료과,진료과명,항목코드,항목명,실시일시)]
 
+colSums(is.na(Gamma)) #진료과와 실시일에 NA가 존재하므로 주의를 요함
+
+setnames(Gamma, old = "등록번호", new = "PtID")
+setnames(Gamma, old = "성명", new = "PtName")
+setnames(Gamma, old = "실시일시", new = "실시일")
+
+Gamma[, 실시일 := as.IDate(실시일, format = "%Y%m%d")]
+Gamma[, 실시요일 := weekdays(실시일)]
+Gamma[, TxDate := 실시일 - 2]
 ```
 
 ## OCS 자료
@@ -60,9 +65,7 @@ I-131 치료정보를 구하는 방법은 몇 가지가 있겠지만 이 글에�
 
 -   이 때 접수일자기간을 너무 길게 설정하면 오류가 나므로 3개월에서 6개월 정도가 적당해 보입니다. 그렇지만 특정분기에는 검사 건수가 많아 3개월 단위로 다운로드 하는 것이 제일 안전합니다.
 
--   조회가 완료되면 좌하측의 "조회내역출력"버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다.
-    페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다.
-    csv 파일형식을 지원하지 않으므로 "Microsoft Excel 파일 (\*.xls)로 진행하면 됩니다.
+-   조회가 완료되면 좌하측의 "조회내역출력"버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다. 페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다. csv 파일형식을 지원하지 않으므로 "Microsoft Excel 파일 (\*.xls)로 진행하면 됩니다.
 
 -   보고서 형식 유지는 불필요하므로 선택을 해제하고 진행하면 됩니다.
 
@@ -77,18 +80,20 @@ I-131 치료정보를 구하는 방법은 몇 가지가 있겠지만 이 글에�
     -   기간: `r min(Gamma$실시일, na.rm=TRUE)` \~ `r max(Gamma$실시일, na.rm=TRUE)`
     -   총자료수: `r nrow(Gamma)`
 
-```{r HD074, echo=FALSE, message=FALSE, warning=FALSE}
+```{r HD074, echo=FALSE, results='hide'}
 
 HD074_raw <- Gamma[항목코드 %in% "HD074"]
+
+colSums(is.na(HD074_raw)) # 이 코드에서는 진료과와 실시일에 NA가 없음
+
 HD074_NM <- HD074_raw[진료과 %in% "NM"]
-HD074_NM_월요일 <-  HD074_NM[요일 %in% "월요일"]
-HD074 <- HD074_NM[!(요일 %in% "월요일")]
+HD074_NM_월요일 <-  HD074_NM[실시요일 %in% "월요일"]
+HD074 <- HD074_NM[!(실시요일 %in% "월요일")]
 ```
 
 #### HD074 코드
 
-I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다.
-최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는
+I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다. 최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는
 
 -   항목코드: `HD074`
 
@@ -106,7 +111,7 @@ I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 
 
 현재는 I-131 치료스캔은 금요일에만 시행되므로, 시행요일들을 조사해보면 아래와 같았습니다.
 
-```{r tbl-distribution, echo=FALSE, message=FALSE, warning=FALSE}
+```{r HD074_weekday, echo=FALSE, message=FALSE, warning=FALSE}
 
 table(HD074_NM$요일) %>% kable()
 ```
@@ -115,25 +120,27 @@ table(HD074_NM$요일) %>% kable()
 
 -   정리하면, HD074 코드사용한 I-131 치료스캔은 `r nrow(HD074)` 사례였습니다.
 
-```{r HD074_실시일별, echo=FALSE, message=FALSE}
+```{r HD074_by_TxDate, echo=FALSE, message=FALSE}
 
-HD074_실시일별 <- HD074[, .(n = .N), by = .(실시일, 요일)]
+HD074_by_TxDate <- HD074[, .(n = .N), by = .(TxDate)]
 ```
 
--   일일치료건수의 최대값은 `r max(HD074_실시일별$n)`으로 가용한 핵의학과 격리 치료병실 수 범위 내 였습니다.
+-   일일치료건수의 최대값은 `r max(HD074_by_TxDate$n)`으로 가용한 핵의학과 격리 치료병실 수 범위 내 였습니다.
 -   이를 도시하면 아래의 @fig-HD074 와 같습니다.
 
 ```{r echo=FALSE, message=FALSE}
 #| label: fig-HD074
 
-Plots<-my_daily_graphs(HD074_실시일별)
+Plots<-my_plot_daily_treatments(HD074_by_TxDate)
 walk(Plots, print)
 ```
 
-```{r D43018, echo=FALSE, message=FALSE}
+```{r D43018, echo=FALSE, results='hide'}
 
 D43018 <- Gamma[항목코드 %in% "D43018"]
-D43018_실시일별 <- D43018[, .(n = .N), by = .(실시일, 요일)]
+colSums(is.na(D43018)) # 이 코드에서는 진료과에는 NA가 있으나 실시일에는 없음
+
+D43018_by_TxDate <- D43018[, .(n = .N), by = .(TxDate)]
 ```
 
 #### D43018 코드
@@ -145,13 +152,13 @@ D43018_실시일별 <- D43018[, .(n = .N), by = .(실시일, 요일)]
     -   전형적인 코드이므로 요일과 무관하게 당연히 I-131 치료스캔으로 판단됩니다.
     -   HD074와 처방기간의 중복도 없습니다.
 -   오류점검에서
-    -   시행일별 최대건수는 `r max(D43018_실시일별$n, na.rm=TRUE)`로 치료병실 가동범위 내입니다.
+    -   시행일별 최대건수는 `r max(D43018_by_TxDate$n, na.rm=TRUE)`로 치료병실 가동범위 내입니다.
     -   연도별 실시일별 횟수(=코드합계) 그래프는 아래와 같습니다.
 
 ```{r echo=FALSE, message=FALSE}
 #| label: fig-D43018
 
-Plots<-my_daily_graphs(D43018_실시일별)
+Plots<-my_plot_daily_treatments(D43018_by_TxDate)
 walk(Plots, print)
 ```
 
@@ -159,12 +166,14 @@ walk(Plots, print)
 
 D43019 <- Gamma[항목코드 %in% "D43019"]
 
+colSums(is.na(D43019)) # 이 코드에서는 진료과/실시일에 NA가 없음
+
 min_D43018_date <- min(Gamma[항목코드 %in% "D43018", 실시일], na.rm = TRUE)
 
 D43019_before_D43018 <- D43019[실시일 < min_D43018_date]
 D43019_after_D43018 <- D43019[실시일 >= min_D43018_date]
 
-D43019_실시일별 <- D43019[, .(n = .N), by = .(실시일, 요일)]
+D43019_by_TxDate <- D43019[, .(n = .N), by = .(TxDate)]
 ```
 
 #### D43019 코드
@@ -177,12 +186,12 @@ D43019_실시일별 <- D43019[, .(n = .N), by = .(실시일, 요일)]
     -   일부 샘플링을 해서 추정해보면 이 코드의 경우에서는 기간에 따라 사용목적이 달라졌다고 생각되는데 `D43018`이 최초사용일 `r min(D43018$실시일, na.rm=TRUE)` 이전의 `r nrow(D43019_before_D43018)` 사례는 I-131 치료스캔으로 사용이되었다고 생각됩니다. 이후의 `r nrow(D43019_after_D43018)` 사례는 진단스캔으로 사용된 것으로 추정됩니다.
     -   일단은 `D43018` 이전은 치료로 간주하고 이후는 사용목적이 불분명하지만 그 빈도가 높지 않으므로 I-131 diagnostic whole body scan으로 사용된 것으로 간주하고 진행하였습니다.
 -   오류점검에서
-    -   시행일별 최대건수는 `r max(D43019_실시일별$n, na.rm=TRUE)`로 치료병실 가동범위 내입니다.
+    -   시행일별 최대건수는 `r max(D43019_by_TxDate$n, na.rm=TRUE)`로 치료병실 가동범위 내입니다.
 
 ```{r echo=FALSE, message=FALSE}
 #| label: fig-D43019
 
-Plots<-my_daily_graphs(D43019_실시일별)
+Plots<-my_plot_daily_treatments(D43019_by_TxDate)
 walk(Plots, print)
 ```
 
@@ -201,12 +210,9 @@ D43020 <- Gamma[항목코드 %in% "D43020"]
 
 Tx_OCS <- rbind(HD074, D43018, D43019_before_D43018)
 
-setnames(Tx_OCS, old = "등록번호", new = "PtID")
-setnames(Tx_OCS, old = "성명", new = "PtName")
-setnames(Tx_OCS, old = "항목코드", new = "출처")
-Tx_OCS[, 투여일 := 실시일 - 2]
-Tx_OCS <- Tx_OCS[, .SD, .SDcols = c("PtID", "PtName", "투여일", "출처", "실시일")]
-Tx_OCS[, 치료종류 := "I-131"]
+setnames(Tx_OCS, old = "항목코드", new = "source")
+Tx_OCS <- Tx_OCS[, .(PtID,PtName,TxDate,source,실시일)]
+Tx_OCS[, TxType := "I-131"]
 ```
 
 ### Tx_OCS로 통합
@@ -217,108 +223,112 @@ Tx_OCS[, 치료종류 := "I-131"]
 -   총자료수 `r nrow(Tx_OCS)` 로 진행하였습니다. (이는 각각의 합인 `r nrow(D43018) + nrow(HD074) + nrow(D43019_before_D43018)`고 일치합니다.
 -   하지만 D43019의 2001년 그래프를 보면 치료건수가 3월부터 약 20건으로 급증하여 이 것이 국가방사선비상진료센터 내의 격리치료병실이 가동되기 시작한 때로 추정되며, 치료환자의 분석시작 시점으로 설정하는 것도 향후 고려됩니다.
 
-```{r Tx_Access, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Tx_Access, echo=FALSE, results='hide'}
 
-Tx_Access_raw <- my_read_excel("raw_data/Tx_data","I-131 치료 정보.xlsx",                my_define_col_types(total=17,date=4,numeric=c(5,6)))
+Tx_Access <- my_read_excel("raw_data/Tx_data","I-131 치료 정보.xlsx",                my_define_col_types(total=17,date=4,numeric=c(5,6)))
+Tx_Access <- Tx_Access[, .SD, .SDcols = c("등록번호", "환자이름", "치료종류", "투여일", "용량", "회차","수탁병원","비고")]
 
-Tx_Access_raw_list <-my_PtID(Tx_Access_raw)
-Tx_Access <-Tx_Access_raw_list$valid_data
-Tx_Access_invalid <-Tx_Access_raw_list$invalid_data
+setnames(Tx_Access, old = "등록번호", new = "PtID")
+setnames(Tx_Access, old = "환자이름", new = "PtName")
+setnames(Tx_Access, old = "치료종류", new = "TxType")
+setnames(Tx_Access, old = "투여일", new = "TxDate")
+setnames(Tx_Access, old = "용량", new = "TxDose")
+setnames(Tx_Access, old = "회차", new = "TxNumber")
+setnames(Tx_Access, old = "수탁병원", new = "referH")
+setnames(Tx_Access, old = "비고", new = "memo")
+Tx_Access[, TxDate := as.IDate(TxDate)]
+
+Tx_Access_list <-my_Validation_PtID(Tx_Access)
+Tx_Access <-Tx_Access_list$valid
+Tx_Access_invalid <-Tx_Access_list$invalid
 Tx_Access_invalid <- Tx_Access_invalid[!is.na(PtID)]
 Tx_Access<-rbind(Tx_Access,Tx_Access_invalid)
-Tx_Access <- Tx_Access[, .SD, .SDcols = c("PtID", "환자이름", "치료종류", "투여일", "용량", "회차", "담당과장","수탁병원","비고")]
-rm(Tx_Access_raw_list,Tx_Access_invalid)
+rm(Tx_Access_list)
 
-Tx_Access_sequence <-my_find_invalid_sequences(Tx_Access)
+Tx_Access_invalid_sequence <-my_find_invalid_sequences(Tx_Access)
 
 # 수탁병원기록이 없거나 "ㅡ"면 refer에 0을 파생
-Tx_Access[, refer := ifelse(is.na(수탁병원) | 수탁병원 == "ㅡ", 0, 1)]
+Tx_Access[, refer := ifelse(is.na(referH) | referH == "ㅡ", 0, 1)]
+
+Tx_Access[, outsideH := ifelse(str_detect(memo, "병원"), TRUE, FALSE)]
+
+
+colSums(is.na(Tx_Access))
 
 # 환자단위로 요약
 Patient_Tx_Access <- Tx_Access[, .(
-  First = min(투여일, na.rm = TRUE),
-  Last = max(투여일, na.rm = TRUE),
-  CumulativeDose = sum(용량, na.rm = TRUE),
+  First = min(TxDate, na.rm = TRUE),
+  Last = max(TxDate, na.rm = TRUE),
+  CumulativeDose = sum(TxDose, na.rm = TRUE),
   TxNumber = .N,
   Refer = sum(refer, na.rm = TRUE)
-), by = .(PtID, 환자이름)]
+), by = .(PtID, PtName)]
 
-Patient_Tx_Access_our <- Patient_Tx_Access[Refer == 0]
-Patient_Tx_Access_refer <- Patient_Tx_Access[Refer > 0]
+Patient_Tx_Access_Refer_No <- Patient_Tx_Access[Refer == 0]
+Patient_Tx_Access_Refer <- Patient_Tx_Access[Refer > 0]
 ```
 
 ## Access 데이터베이스
 
 ### I-131 치료 정보
 
--   저자는 핵의학치료를  Access의 `I-131 치료 정보` 테이블에 2014년7월9일까지 입력했었습니다.
-    -   `r min(Tx_Access$투여일, na.rm=TRUE)`부터 `r max(Tx_Access$투여일, na.rm=TRUE)`까지
+-   저자는 핵의학치료를 Access의 `I-131 치료 정보` 테이블에 2014년7월9일까지 입력했었습니다.
+    -   `r min(Tx_Access$TxDate, na.rm=TRUE)`부터 `r max(Tx_Access$TxDate, na.rm=TRUE)`까지
     -   `r nrow(Tx_Access)`회의 핵의학치료가 입력되어 있습니다.
-- 연도별로 실시일별 룃수(치료건수)는 아래의 그래프들과 같다.    
+-   연도별로 실시일별 룃수(치료건수)는 아래의 그래프들과 같다.
 
-```{r rai_graph, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Tx_Access_by_TxDate, echo=FALSE, message=FALSE, warning=FALSE}
 
-Tx_Access_투여일별 <- Tx_Access[, .(n = .N), by = .(투여일)]
-Tx_Access_실시일별 <- Tx_Access_투여일별[,실시일:=as.IDate(투여일)]
-setorder(Tx_Access_실시일별, 실시일)  # 오름차순 정렬
-plots <- my_daily_graphs(Tx_Access_실시일별)
+Tx_Access_by_TxDate <- Tx_Access[, .(n = .N), by = .(TxDate)]
+setorder(Tx_Access_by_TxDate, TxDate)  # 오름차순 정렬
+plots <- my_plot_daily_treatments(Tx_Access_by_TxDate)
 
 walk(plots, print)
 ```
 
--   그래프를 보면 `r min(Tx_Access$투여일, na.rm=TRUE)`부터이지만, 1996년 이전은 간헐적으로 입력된 것으로 판단되므로, 경우에 따라서는 1996년부터 분석대상으로 하는 것이 고려될 수 있다.
+-   그래프를 보면 `r min(Tx_Access$TxDate, na.rm=TRUE)`부터이지만, 1996년 이전은 간헐적으로 입력된 것으로 판단되므로, 경우에 따라서는 1996년부터 분석대상으로 하는 것이 고려될 수 있다.
 
 ```{r Tx_Access_OCS, echo=FALSE, message=FALSE, warning=FALSE}
 
-Tx_Access[, 출처 := "Access"]
-Tx_Access[, 투여일 := as.IDate(투여일)]
+Tx_OCS[, c("실시일") := NULL]
+Tx_Access[, c("memo") := NULL]
+Tx_Access[, source := "Access"]
 
-Tx_Access_OCS_raw <-bind_rows(Tx_Access,Tx_OCS)
+Tx_Access_OCS <-bind_rows(Tx_Access,Tx_OCS)
 
-setorder(Tx_Access_OCS_raw, PtID, 투여일)
-Tx_Access_OCS_by_PtID_투여일<-Tx_Access_OCS_raw[, `:=`(
-  다음투여일_차이 = as.numeric(difftime(shift(투여일, type = "lead"), 투여일, units = "days")),
-  이전투여일_차이 = as.numeric(difftime(투여일, shift(투여일, type = "lag"), units = "days"))
+setorder(Tx_Access_OCS, PtID, TxDate)
+Tx_Access_OCS_by_PtID_TxDate <- Tx_Access_OCS[, `:=`(
+  다음TxDate_차이 = shift(TxDate, type = "lead") - TxDate,
+  이전TxDate_차이 = TxDate - shift(TxDate, type = "lag")
 ), by = PtID]
 
-Tx_Access_OCS_by_PtID_투여일[, remove := fifelse(
-  ((!is.na(다음투여일_차이) & 다음투여일_차이 < 8) |
-   (!is.na(이전투여일_차이) & 이전투여일_차이 < 8)) & 출처 != "Access",
+
+Tx_Access_OCS_by_PtID_TxDate[, remove := fifelse(
+  ((!is.na(다음TxDate_차이) & 다음TxDate_차이 < 8) |
+   (!is.na(이전TxDate_차이) & 이전TxDate_차이 < 8)) & source != "Access",
   "Y",
   "N"
 )]
 
 
-Tx_Access_OCS_by_PtID_투여일[, 출처 := fifelse(
-  ((!is.na(다음투여일_차이) & 다음투여일_차이 < 8) | 
-   (!is.na(이전투여일_차이) & 이전투여일_차이 < 8)) & 
-   출처 == "Access",
-  paste(출처, "OCS"),
-  출처
+Tx_Access_OCS_by_PtID_TxDate[, source := fifelse(
+  ((!is.na(다음TxDate_차이) & 다음TxDate_차이 < 8) | 
+   (!is.na(이전TxDate_차이) & 이전TxDate_차이 < 8)) & 
+   source == "Access",
+  paste(source, "OCS"),
+  source
 )]
 
-Tx_Access_OCS_duplicated <- Tx_Access_OCS_by_PtID_투여일[remove == "Y"]
-Tx_Access_OCS <- Tx_Access_OCS_by_PtID_투여일[remove == "N"]
-Tx_Access_OCS_Other <- Tx_Access_OCS[치료종류 == "I-131 MIBG" | 치료종류 == "RIT"]
-Tx_Access_OCS_RAI <- Tx_Access_OCS[치료종류 != "I-131 MIBG" & 치료종류 != "RIT"]
+Tx_Access_OCS_duplicated <- Tx_Access_OCS_by_PtID_TxDate[remove == "Y"]
+Tx_Access_OCS <- Tx_Access_OCS_by_PtID_TxDate[remove == "N"]
+Tx_Access_OCS_Other <- Tx_Access_OCS[TxType == "I-131 MIBG" | TxType == "RIT"]
+Tx_Access_OCS_RAI <- Tx_Access_OCS[TxType != "I-131 MIBG" & TxType != "RIT"]
 ```
 
-```{r Tx_Access_OCS_RAI, echo=FALSE, message=FALSE, warning=FALSE}
-
-setnames(Tx_Access_OCS_RAI, old = "환자이름", new = "PtName")
-setnames(Tx_Access_OCS_RAI, old = "치료종류", new = "TxType")
-setnames(Tx_Access_OCS_RAI, old = "투여일", new = "TxDate")
-setnames(Tx_Access_OCS_RAI, old = "용량", new = "TxDose")
-setnames(Tx_Access_OCS_RAI, old = "회차", new = "TxNumber")
-setnames(Tx_Access_OCS_RAI, old = "수탁병원", new = "referH")
-setnames(Tx_Access_OCS_RAI, old = "출처", new = "source")
-setnames(Tx_Access_OCS_RAI, old = "비고", new = "memo")
-
-```
 
 ### OCS와 Access 병합
 
--   Access 데이터베이스의 `r nrow(Tx_Access)` 건과 OCS 다운로드된 `r nrow(Tx_OCS)` 건을 단순히 병합하면 `r nrow(Tx_Access_OCS_raw)`이지만
+-   Access 데이터베이스의 `r nrow(Tx_Access)` 건과 OCS 다운로드된 `r nrow(Tx_OCS)` 건을 단순히 병합하면 `r nrow(Tx_Access_OCS)`이지만
 -   중복된 `r nrow(Tx_Access_OCS_duplicated)` 건을 제외하면
 -   총 치료횟수는 `r nrow(Tx_Access_OCS)` 건이었다.
 -   치료종류가 `I-131 MIBG` 와 `RIT` 는 `r nrow(Tx_Access_OCS_Other)` 였다.
@@ -340,6 +350,11 @@ Patient_Access_OCS_RAI <-Tx_Access_OCS_RAI[, .(
 
 EMR_raw<- my_read_excel_list("raw_data","관심환자")
 EMR_raw <- EMR_raw[, .(등록일, 등록번호, `성 명`, 성별, 나이, 특기사항, 분류명)]
+
+setnames(EMR_raw, old = "등록번호", new = "PtID")
+setnames(EMR_raw, old = "성 명", new = "PtName")
+setnames(EMR_raw, old = "성별", new = "Sex")
+setnames(EMR_raw, old = "나이", new = "Age")
 EMR_raw[, 등록일 := as.IDate(등록일)]
 ```
 
@@ -349,34 +364,33 @@ Tx_EMR <- my_parsing_Tx_EMR(EMR_raw)
 ```
 
 ## EMR 관심환자
-- 저자는 외래진료기록시 예후정보, 핵의학 치료정보, ATA response를 메타데이터화하여 관심환자에 등록해오고 있다. 타과장님의 환자가 저자의 환자가 된 경우로 등록해오고 있다.
-- 비록 핵의학과 전체는 아니지만 single expert의 long-term follow up data이면서 치료 및 추적관찰 프로토콜에 일관성이 좋아 임상적인 의미를 도출할 수 있다고 생각한다.
+
+-   저자는 외래진료기록시 예후정보, 핵의학 치료정보, ATA response를 메타데이터화하여 관심환자에 등록해오고 있다. 타과장님의 환자가 저자의 환자가 된 경우로 등록해오고 있다.
+-   비록 핵의학과 전체는 아니지만 single expert의 long-term follow up data이면서 치료 및 추적관찰 프로토콜에 일관성이 좋아 임상적인 의미를 도출할 수 있다고 생각한다.
 
 ### Tx_EMR
-- 엑셀파일로 다운로드하여 핵의학 치료기록만 추출하여 Tx_EMR로 구분하였다.
-- 요약하면
-    - 기간: `r min(Tx_EMR$TxDate, na.rm=TRUE)` ~ `r max(Tx_EMR$TxDate, na.rm=TRUE)`
-    - 치료횟수: `r nrow(Tx_EMR)`
-    - 여기에는 치료용량을 확인할 수 없었던 `r nrow(Tx_EMR$TxDose)`례도 포함되어 있다.
-- 연도별로 실시일별 룃수(치료건수)는 아래의 그패프들과 같습니다.   
+
+-   엑셀파일로 다운로드하여 핵의학 치료기록만 추출하여 Tx_EMR로 구분하였다.
+-   요약하면
+    -   기간: `r min(Tx_EMR$TxDate, na.rm=TRUE)` \~ `r max(Tx_EMR$TxDate, na.rm=TRUE)`
+    -   치료횟수: `r nrow(Tx_EMR)`
+    -   여기에는 치료용량을 확인할 수 없었던 `r nrow(Tx_EMR$TxDose)`례도 포함되어 있다.
+-   연도별로 실시일별 룃수(치료건수)는 아래의 그패프들과 같습니다.
 
 ```{r Tx_EMR_plot, echo=FALSE, warning=FALSE, message=FALSE}
 
-Tx_EMR_TxDate별 <- Tx_EMR[, .(n = .N), by = .(TxDate)]
-setnames(Tx_EMR_TxDate별, old = "TxDate", new = "실시일")
-setorder(Tx_EMR_TxDate별, 실시일)  # 오름차순 정렬
-plots<-my_daily_graphs(Tx_EMR_TxDate별)
+Tx_EMR_by_TxDate <- Tx_EMR[, .(n = .N), by = .(TxDate)]
+setorder(Tx_EMR_by_TxDate, TxDate)  # 오름차순 정렬
+plots<-my_plot_daily_treatments(Tx_EMR_by_TxDate)
 walk(plots, print)
 ```
 
-- 1990년이전의 등록된 연간치료건수는 적으며 그나마, 1990년부터늬 등료건수 연 6회 이상임을 알 수 있습니다. 
+-   1990년이전의 등록된 연간치료건수는 적으며 그나마, 1990년부터늬 등료건수 연 6회 이상임을 알 수 있습니다.
 
 ```{r combining, echo=FALSE, message=FALSE, warning=FALSE}
 
-Tx_EMR <- Tx_EMR[, .SD, .SDcols = c("등록번호","성 명","TxDate","TxType","TxDose","TxNumber","outsideH","TxWBS","TxTg","TxTg_binary")]
+Tx_EMR <- Tx_EMR[, .(PtID,PtName,TxDate,TxType,TxDose,TxNumber,outsideH,TxWBS,TxTg,TxTg_binary)]
 
-setnames(Tx_EMR, old = "등록번호", new = "PtID")
-setnames(Tx_EMR, old = "성 명", new = "PtName")
 Tx_EMR[,source := "EMR"]
 
 Tx_EMR_MIBG <- Tx_EMR[TxType=="I-131 MIBG",]
@@ -388,7 +402,6 @@ Tx_Access_OCS_EMR <- rbind(Tx_Access_OCS_RAI, Tx_EMR_RAI, fill=TRUE)
 ### OCS+Access+EMR 치료병합
 
 EMR에 등록된 치료 `r nrow(Tx_EMR)` 중 I-131 MIBG 치료 `r nrow(Tx_EMR_MIBG)` 례를 제외한 나머지 `r nrow(Tx_EMR_RAI)` 자료를 앞서의 OCS+Access 통합자료 `r nrow(Tx_Access_OCS_RAI)`에 다시 통합하였습니다.
-
 
 ```{r Tx_Access_OCS_EMR_duplicated, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -418,9 +431,8 @@ Tx_Access_OCS_EMR_duplicated <- Tx_Access_OCS_EMR_by_PtID_TxDate[remove != "N"]
 Tx_Access_OCS_EMR <- Tx_Access_OCS_EMR_by_PtID_TxDate[remove == "N"]
 ```
 
-- 중복된 치료는 `r nrow(Tx_Access_OCS_EMR_duplicated)`
-- 중복이 되지 않는 치료는 `r nrow(Tx_Access_OCS_EMR)`
-로 중복이 되지 않은 치료자료로 진행하였다.
+-   중복된 치료는 `r nrow(Tx_Access_OCS_EMR_duplicated)`
+-   중복이 되지 않는 치료는 `r nrow(Tx_Access_OCS_EMR)` 로 중복이 되지 않은 치료자료로 진행하였다.
 
 ```{r Patient_Tx_Access_OCS_EMR, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -434,7 +446,7 @@ Patient_Tx_Access_OCS_EMR <- Tx_Access_OCS_EMR[, .(
 
 ```
 
-- 환자수로는 `r nrow(Patient_Tx_Access_OCS_EMR)`였다.
+-   환자수로는 `r nrow(Patient_Tx_Access_OCS_EMR)`였다.
 
 ```{r end, echo=FALSE}
 

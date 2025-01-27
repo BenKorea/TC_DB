@@ -1,10 +1,10 @@
-my_daily_graphs <- function(data) {
+my_plot_daily_treatments <- function(data) {
   
-  data[, 실시연도 := format(실시일, "%Y")]
+  data[, 실시연도 := format(TxDate, "%Y")]
   unique_years <- unique(data[, 실시연도])
   
   plots <- lapply(split(data, by = "실시연도"), function(year_data) {
-    ggplot(year_data, aes(x = 실시일, y = n)) +
+    ggplot(year_data, aes(x = TxDate, y = n)) +
       geom_bar(stat = "identity", fill = "lightblue", color = "black") +
       scale_x_date(
         date_breaks = "1 month",  # 한 달 단위로 x축 표시
@@ -12,8 +12,8 @@ my_daily_graphs <- function(data) {
       ) +
       labs(
         title = paste("(연도:", unique(year_data$실시연도), ")"),
-        x = "실시일",
-        y = "횟수"
+        x = "TxDate",
+        y = "일일치료건수"
       ) +
       theme_minimal() +
       theme(

@@ -216,24 +216,15 @@ ul.task-list li input[type="checkbox"] {
 <li><code>진료과==NM</code>인 스캔수: 125 였습니다.</li>
 </ul>
 <p>현재는 I-131 치료스캔은 금요일에만 시행되므로, 시행요일들을 조사해보면 아래와 같았습니다.</p>
-<div id="tbl-distribution" class="cell anchored">
+<div class="cell">
 <div class="cell-output-display">
-<table class="caption-top table table-sm table-striped small">
+<table class="caption-top">
 <thead>
 <tr class="header">
-<th style="text-align: left;">Var1</th>
 <th style="text-align: right;">Freq</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: left;">금요일</td>
-<td style="text-align: right;">120</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">월요일</td>
-<td style="text-align: right;">5</td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -532,6 +523,14 @@ Figure&nbsp;22
 </div>
 </div>
 </div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>    PtID   PtName   진료과 진료과명 항목코드   항목명   실시일 실시요일 
+       0        0        0        0        0        0        0        0 
+  TxDate 
+       0 </code></pre>
+</div>
+</div>
 </section>
 <section id="d43019-코드" class="level4">
 <h4 class="anchored" data-anchor-id="d43019-코드">D43019 코드</h4>
@@ -702,6 +701,14 @@ Figure&nbsp;33
 <li>총자료수 9821 로 진행하였습니다. (이는 각각의 합인 9821고 일치합니다.</li>
 <li>하지만 D43019의 2001년 그래프를 보면 치료건수가 3월부터 약 20건으로 급증하여 이 것이 국가방사선비상진료센터 내의 격리치료병실이 가동되기 시작한 때로 추정되며, 치료환자의 분석시작 시점으로 설정하는 것도 향후 고려됩니다.</li>
 </ul>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>    PtID   PtName   TxType   TxDate   TxDose TxNumber   referH     memo 
+       0        0        0        0        6        0     7389     9515 
+   refer outsideH 
+       0     9515 </code></pre>
+</div>
+</div>
 </section>
 </section>
 <section id="access-데이터베이스" class="level2">
@@ -720,189 +727,189 @@ Figure&nbsp;33
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-4.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-5.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-5.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-6.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-6.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-7.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-7.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-8.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-8.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-9.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-9.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-10.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-10.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-11.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-11.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-12.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-12.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-13.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-13.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-14.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-14.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-15.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-15.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-16.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-16.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-17.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-17.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-18.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-18.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-19.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-19.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-20.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-20.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-21.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-21.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-22.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-22.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-23.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-23.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-24.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-24.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-25.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-25.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-26.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-26.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/rai_graph-27.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/Tx_Access_by_TxDate-27.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -914,11 +921,11 @@ Figure&nbsp;33
 <section id="ocs와-access-병합" class="level3">
 <h3 class="anchored" data-anchor-id="ocs와-access-병합">OCS와 Access 병합</h3>
 <ul>
-<li>Access 데이터베이스의 9535 건과 OCS 다운로드된 9821 건을 단순히 병합하면 19356이지만</li>
+<li>Access 데이터베이스의 9535 건과 OCS 다운로드된 9821 건을 단순히 병합하면 11654이지만</li>
 <li>중복된 7702 건을 제외하면</li>
 <li>총 치료횟수는 11654 건이었다.</li>
-<li>치료종류가 <code>I-131 MIBG</code> 와 <code>RIT</code> 는 58 였다.</li>
-<li>이를 제외한 Radioactive Iodine Therapy는 11596 건 이었다.</li>
+<li>치료종류가 <code>I-131 MIBG</code> 와 <code>RIT</code> 는 61 였다.</li>
+<li>이를 제외한 Radioactive Iodine Therapy는 11593 건 이었다.</li>
 </ul>
 </section>
 </section>
@@ -1221,13 +1228,13 @@ Figure&nbsp;33
 </section>
 <section id="ocsaccessemr-치료병합" class="level3">
 <h3 class="anchored" data-anchor-id="ocsaccessemr-치료병합">OCS+Access+EMR 치료병합</h3>
-<p>EMR에 등록된 치료 1822 중 I-131 MIBG 치료 1 례를 제외한 나머지 1821 자료를 앞서의 OCS+Access 통합자료 11596에 다시 통합하였습니다.</p>
+<p>EMR에 등록된 치료 1822 중 I-131 MIBG 치료 1 례를 제외한 나머지 1821 자료를 앞서의 OCS+Access 통합자료 11593에 다시 통합하였습니다.</p>
 <ul>
 <li>중복된 치료는 1666</li>
-<li>중복이 되지 않는 치료는 11751 로 중복이 되지 않은 치료자료로 진행하였다.</li>
+<li>중복이 되지 않는 치료는 11748 로 중복이 되지 않은 치료자료로 진행하였다.</li>
 </ul>
 <ul>
-<li>환자수로는 8892였다.</li>
+<li>환자수로는 8578였다.</li>
 </ul>
 
 
