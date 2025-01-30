@@ -1,53 +1,53 @@
 ################################################################################
-## my_functions_for_Tx_EMR
+## my_functions_for_tx_emr
 ################################################################################
-my_splilt_lines_for_Tx_EMR <- function(dt) {
+my_splilt_lines_for_tx_emr <- function(dt) {
   
   dt[, line_count := str_count(특기사항, "\n") + 1]
-  if (input_error_checking_mode == "Y") {
-    Tx_EMR_error_line_count <<- dt[line_count >= 3]
+  if (ERROR_CKECKING_MODE == "Y") {
+    tx_EMR_error_line_count <<- dt[line_count >= 3]
   }
   dt <- dt[line_count == 2 | line_count == 1]
-  dt[line_count == 2, c("Tg_line", "tx_line") := tstrsplit(특기사항, split = "\n", fixed = TRUE, fill = NA)]
+  dt[line_count == 2, c("tg_line", "tx_line") := tstrsplit(특기사항, split = "\n", fixed = TRUE, fill = NA)]
   dt[line_count == 1, c("tx_line") := 특기사항]
   
-  dt[, Tg_line := my_clean_string_edges(Tg_line)]
+  dt[, tg_line := my_clean_string_edges(tg_line)]
   dt[, tx_line := my_clean_string_edges(tx_line)]
 
-  if (input_error_checking_mode == "Y") {
-    Tx_EMR_error_line <<- dt[!grepl("^[0-9]", dt$tx_line), ]
+  if (ERROR_CKECKING_MODE == "Y") {
+    tx_emr_error_line <<- dt[!grepl("^[0-9]", dt$tx_line), ]
   }
   dt <- dt[grepl("^[0-9]", dt$tx_line), ]
   
   return(dt)
 }
 
-my_parsing_Tx_EMR_tx_line <- function(dt) {
+my_parsing_tx_emr_tx_line <- function(dt) {
   
-  dt[, TxDate := str_extract(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
+  dt[, tx_date := str_extract(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
   dt[, tx_line := str_remove(tx_line, "\\d{4}-\\d{2}-\\d{2}")]
-  error <- dt[is.na(TxDate)]
-  error[,TxDate := str_extract(tx_line, "\\d{4}-\\w{2}-dd")]
-  error[, tx_line := str_remove(tx_line, "\\d{4}-\\w{2}-dd")]
-  error[,TxDate := str_replace(TxDate, "mm","06")]
-  error[,TxDate := str_replace(TxDate, "dd","15")]
-  error[,TxDate_imputed := TRUE]
-  dt <- dt[!is.na(TxDate)]
-  dt[,TxDate_imputed := FALSE]
+  error <- dt[is.na(tx_date)]
+  error[,tx_date := str_extract(tx_line, "\\d{4}-\\w{2}-dd")]
+  error[,tx_line := str_remove(tx_line, "\\d{4}-\\w{2}-dd")]
+  error[,tx_date := str_replace(tx_date, "mm","06")]
+  error[,tx_date := str_replace(tx_date, "dd","15")]
+  error[,tx_date_imputed := TRUE]
+  dt <- dt[!is.na(tx_date)]
+  dt[,tx_date_imputed := FALSE]
   dt<-rbind(dt,error)
-  dt[, TxDate := as.IDate(TxDate)]
-  Tx_EMR_error_TxDate <<- dt[is.na(TxDate)]
-  dt <- dt[!is.na(TxDate)]
+  dt[, tx_date := as.IDate(tx_date)]
+  tx_emr_error_tx_date <<- dt[is.na(tx_date)]
+  dt <- dt[!is.na(tx_date)]
   
-  dt[, Tx_rhTSH := str_detect(tx_line, "\\brhTSH\\b")]
-  dt[, MIBG := str_detect(tx_line, "\\bMIBG\\b")]
+  dt[, tx_rhtsh := str_detect(tx_line, "\\brhTSH\\b")]
+  dt[, mibg := str_detect(tx_line, "\\bMIBG\\b")]
   dt[, tx_line := str_remove(tx_line, "\\brhTSH\\b|\\bMIBG\\b")]
   
   dt[, combined_agent := str_extract(tx_line, "\\s\\+.*?(?=\\()")]
   dt[, tx_line := str_remove(tx_line, "\\s\\+.*?(?=\\s*\\()")]
   
-  dt[, TxType := fifelse(
-    MIBG == TRUE, 
+  dt[, tx_type := fifelse(
+    mibg == TRUE, 
     "I-131 MIBG",  # MIBG가 TRUE인 경우
     fifelse(
       !is.na(combined_agent), 
@@ -55,68 +55,68 @@ my_parsing_Tx_EMR_tx_line <- function(dt) {
       "I-131"  # 나머지 경우
     )
   )]
-  dt[, c("MIBG", "combined_agent") := NULL]
-  Tx_EMR_error_TxType <<- dt[is.na(TxType)]
-  dt <- dt[!is.na(TxType)]
+  dt[, c("mibg", "combined_agent") := NULL]
+  tx_emr_error_is_na_tx_type <<- dt[is.na(tx_type)]
+  dt <- dt[!is.na(tx_type)]
   
-  dt[, TxDose := str_extract(tx_line, "\\d+\\s*mCi")]
+  dt[, tx_dose := str_extract(tx_line, "\\d+\\s*mCi")]
   dt[, tx_line := str_remove(tx_line, "\\d+\\s*mCi")]
-  dt[, TxDose := as.numeric(str_remove(TxDose, " mCi"))]
-  Tx_EMR_error_TxDose <<- dt[is.na(TxDose)]
-  # dt <- dt[!is.na(TxDose)] # 분석에 포함시키기 위해 주석 처리석
+  dt[, tx_dose := as.numeric(str_remove(tx_dose, " mCi"))]
+  tx_emr_error_is_na_tx_dose <<- dt[is.na(tx_dose)]
+  # dt <- dt[!is.na(tx_dose)] # 분석에 포함시키기 위해 주석 처리석
   
   dt[, tx_details := str_extract(tx_line, "\\(.*?\\)")]
   dt[, tx_line := str_remove(tx_line, "\\(.*?\\)")] 
   
-  dt[, outsideH := str_extract(tx_line, "@\\s*.*$")]
+  dt[, outside_hosp := str_extract(tx_line, "@\\s*.*$")]
   dt[, tx_line := str_remove(tx_line, "@\\s*.*$")]
   
   
-  dt[, c("TxNumber", "TxWBS", "Tg_TFT", "TxTgAb") := tstrsplit(tx_details, ",", fixed = TRUE)]
+  dt[, c("tx_number", "tx_wbs", "tg_tft", "tx_tgab") := tstrsplit(tx_details, ",", fixed = TRUE)]
   
-  dt[, TxNumber := as.numeric(str_extract(TxNumber, "\\d"))]
+  dt[, tx_number := as.numeric(str_extract(tx_number, "\\d"))]
   
-  dt[is.na(Tg_TFT), TxTg_binary := "NA"]
-  dt[str_detect(Tg_TFT, "Tg\\s*NA"), TxTg_binary := "NA"]
-  dt[, Tg_TFT := str_remove(Tg_TFT, "Tg\\s*NA")]
+  dt[is.na(tg_tft), tx_tg_binary := "NA"]
+  dt[str_detect(tg_tft, "Tg\\s*NA"), tx_tg_binary := "NA"]
+  dt[, tg_tft := str_remove(tg_tft, "Tg\\s*NA")]
   
-  dt[str_detect(Tg_TFT, "Tg\\s*-"), TxTg_binary := "negative"]
-  dt[, Tg_TFT := str_remove(Tg_TFT, "Tg\\s*-")]
+  dt[str_detect(tg_tft, "Tg\\s*-"), tx_tg_binary := "negative"]
+  dt[, tg_tft := str_remove(tg_tft, "Tg\\s*-")]
   
-  dt[str_detect(Tg_TFT, "Tg\\s*\\+"), TxTg_binary := "positive"]
-  dt[, Tg_TFT := str_remove(Tg_TFT, "Tg\\s*\\+")]
+  dt[str_detect(tg_tft, "Tg\\s*\\+"), tx_tg_binary := "positive"]
+  dt[, tg_tft := str_remove(tg_tft, "Tg\\s*\\+")]
   
-  dt[, Tg1 := str_extract(Tg_TFT, "(?<=Tg )\\d+\\.?\\d*")]
-  dt[, Tg_TFT := str_remove(Tg_TFT, "(?<=Tg )\\d+\\.?\\d*")]
+  dt[, tg1 := str_extract(tg_tft, "(?<=Tg )\\d+\\.?\\d*")]
+  dt[, tg_tft := str_remove(tg_tft, "(?<=Tg )\\d+\\.?\\d*")]
   
-  dt[, TFT := str_extract(Tg_TFT, "(?<=Tg/TgAb/TSH ).*?(?=\\))")]
-  dt[, c("Tg2", "TgAb", "TSH") := tstrsplit(TFT, "/", fixed = TRUE)]
+  dt[, tft := str_extract(tg_tft, "(?<=Tg/TgAb/TSH ).*?(?=\\))")]
+  dt[, c("tg2", "tgab", "tsh") := tstrsplit(tft, "/", fixed = TRUE)]
   
-  dt[str_detect(Tg2, "ND|NA"), TxTg_binary := "NA"]
+  dt[str_detect(tg2, "ND|NA"), tx_tg_binary := "NA"]
   
-  dt[str_detect(Tg2, "-"), TxTg_binary := "negative"]
-  dt[str_detect(Tg2, "\\+"), TxTg_binary := "positive"]
+  dt[str_detect(tg2, "-"), tx_tg_binary := "negative"]
+  dt[str_detect(tg2, "\\+"), tx_tg_binary := "positive"]
   
-  dt[, TxTg := as.numeric(Tg1)]
-  dt[, Tg2 := as.numeric(Tg2)]
-  dt[, TxTg := ifelse(is.na(TxTg), Tg2, TxTg)]
+  dt[, tx_tg := as.numeric(tg1)]
+  dt[, tg2 := as.numeric(tg2)]
+  dt[, tx_tg := ifelse(is.na(tx_tg), tg2, tx_tg)]
   
-  dt[!is.na(TxTg), TxTg_binary := "positive"]
+  dt[!is.na(tx_tg), tx_tg_binary := "positive"]
   
-  Tx_EMR_error_TxTg_binary <- dt[is.na(TxTg_binary)]
+  tx_emr_error_tx_tg_binary <- dt[is.na(tx_tg_binary)]
   
   return(dt)
 }
 
 
-my_parsing_Tx_EMR<-function(dt) {
+my_parsing_tx_emr<-function(dt) {
   
   dt <- dt[분류명 %in% c("1st","2nd","3rd","4th","5th","6th","7th","8th","9th")]
   setnames(dt, "분류명", "Therapy")
   dt[, 시행일 := as.IDate(등록일, format="%Y-%m-%d")]
   
-  dt <- my_splilt_lines_for_Tx_EMR(dt)
-  dt <- my_parsing_Tx_EMR_tx_line(dt)
+  dt <- my_splilt_lines_for_tx_emr(dt)
+  dt <- my_parsing_tx_emr_tx_line(dt)
 
   return(dt)
   

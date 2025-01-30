@@ -6,11 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="김병일">
+<meta name="author" content="BenKorea">
 <meta name="dcterms.date" content="2025-01-11">
-<meta name="description" content="데이터베이스를 만드는 과정 설명">
+<meta name="description" content="데이터베이스를 만드는 과정 기록">
 
-<title>방사성요오드 치료 데이터베이스 – RAI</title>
+<title>I-131 치료 데이터베이스 만들기 – RAI</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -111,16 +111,21 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#ocs-자료" id="toc-ocs-자료" class="nav-link active" data-scroll-target="#ocs-자료">OCS 자료</a>
+  <li><a href="#coding-원칙" id="toc-coding-원칙" class="nav-link active" data-scroll-target="#coding-원칙">Coding 원칙</a>
   <ul>
-  <li><a href="#감마카메라실-판독소견" id="toc-감마카메라실-판독소견" class="nav-link" data-scroll-target="#감마카메라실-판독소견">감마카메라실 판독소견</a>
-  <ul class="collapse">
-  <li><a href="#hd074-코드" id="toc-hd074-코드" class="nav-link" data-scroll-target="#hd074-코드">HD074 코드</a></li>
-  <li><a href="#d43018-코드" id="toc-d43018-코드" class="nav-link" data-scroll-target="#d43018-코드">D43018 코드</a></li>
-  <li><a href="#d43019-코드" id="toc-d43019-코드" class="nav-link" data-scroll-target="#d43019-코드">D43019 코드</a></li>
-  <li><a href="#d43020-코드-x" id="toc-d43020-코드-x" class="nav-link" data-scroll-target="#d43020-코드-x">D43020 코드 (x)</a></li>
+  <li><a href="#상수명" id="toc-상수명" class="nav-link" data-scroll-target="#상수명"><strong>상수명</strong></a></li>
+  <li><a href="#테이블변수명" id="toc-테이블변수명" class="nav-link" data-scroll-target="#테이블변수명"><strong>테이블/변수명</strong></a></li>
   </ul></li>
-  <li><a href="#tx_ocs로-통합" id="toc-tx_ocs로-통합" class="nav-link" data-scroll-target="#tx_ocs로-통합">Tx_OCS로 통합</a></li>
+  <li><a href="#ocs-자료" id="toc-ocs-자료" class="nav-link" data-scroll-target="#ocs-자료">OCS 자료</a>
+  <ul>
+  <li><a href="#감마카메라실-판독소견" id="toc-감마카메라실-판독소견" class="nav-link" data-scroll-target="#감마카메라실-판독소견"><strong>감마카메라실 판독소견</strong></a>
+  <ul class="collapse">
+  <li><a href="#hd074-코드" id="toc-hd074-코드" class="nav-link" data-scroll-target="#hd074-코드"><strong>HD074 코드</strong></a></li>
+  <li><a href="#d43018-코드" id="toc-d43018-코드" class="nav-link" data-scroll-target="#d43018-코드"><strong>D43018 코드</strong></a></li>
+  <li><a href="#d43019-코드" id="toc-d43019-코드" class="nav-link" data-scroll-target="#d43019-코드"><strong>D43019 코드</strong></a></li>
+  <li><a href="#d43020-코드-x" id="toc-d43020-코드-x" class="nav-link" data-scroll-target="#d43020-코드-x"><strong>D43020 코드 (x)</strong></a></li>
+  </ul></li>
+  <li><a href="#tx_ocs로-통합" id="toc-tx_ocs로-통합" class="nav-link" data-scroll-target="#tx_ocs로-통합">tx_ocs로 통합</a></li>
   </ul></li>
   <li><a href="#access-데이터베이스" id="toc-access-데이터베이스" class="nav-link" data-scroll-target="#access-데이터베이스">Access 데이터베이스</a>
   <ul>
@@ -129,8 +134,14 @@ ul.task-list li input[type="checkbox"] {
   </ul></li>
   <li><a href="#emr-관심환자" id="toc-emr-관심환자" class="nav-link" data-scroll-target="#emr-관심환자">EMR 관심환자</a>
   <ul>
-  <li><a href="#tx_emr" id="toc-tx_emr" class="nav-link" data-scroll-target="#tx_emr">Tx_EMR</a></li>
+  <li><a href="#tx_emr" id="toc-tx_emr" class="nav-link" data-scroll-target="#tx_emr">tx_emr</a></li>
+  </ul></li>
   <li><a href="#ocsaccessemr-치료병합" id="toc-ocsaccessemr-치료병합" class="nav-link" data-scroll-target="#ocsaccessemr-치료병합">OCS+Access+EMR 치료병합</a></li>
+  <li><a href="#분석대상군의-결정" id="toc-분석대상군의-결정" class="nav-link" data-scroll-target="#분석대상군의-결정">분석대상군의 결정</a>
+  <ul>
+  <li><a href="#갑상선호르몬-처방통계" id="toc-갑상선호르몬-처방통계" class="nav-link" data-scroll-target="#갑상선호르몬-처방통계">갑상선호르몬 처방통계</a></li>
+  <li><a href="#최소-추적관찰기간의-정의" id="toc-최소-추적관찰기간의-정의" class="nav-link" data-scroll-target="#최소-추적관찰기간의-정의">최소 추적관찰기간의 정의</a></li>
+  <li><a href="#미처방-환자의-분류" id="toc-미처방-환자의-분류" class="nav-link" data-scroll-target="#미처방-환자의-분류">미처방 환자의 분류</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -140,12 +151,12 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">방사성요오드 치료 데이터베이스</h1>
+<h1 class="title">I-131 치료 데이터베이스 만들기</h1>
 </div>
 
 <div>
   <div class="description">
-    데이터베이스를 만드는 과정 설명
+    데이터베이스를 만드는 과정 기록
   </div>
 </div>
 
@@ -155,7 +166,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>김병일 </p>
+             <p>BenKorea </p>
           </div>
   </div>
     
@@ -169,7 +180,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">January 27, 2025</p>
+      <p class="date-modified">January 31, 2025</p>
     </div>
   </div>
     
@@ -180,13 +191,34 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="coding-원칙" class="level2">
+<h2 class="anchored" data-anchor-id="coding-원칙">Coding 원칙</h2>
+<section id="상수명" class="level3">
+<h3 class="anchored" data-anchor-id="상수명"><strong>상수명</strong></h3>
+<ul>
+<li>영문대문자만 사용하여 변수명과 구별하였습니다.</li>
+</ul>
+</section>
+<section id="테이블변수명" class="level3">
+<h3 class="anchored" data-anchor-id="테이블변수명"><strong>테이블/변수명</strong></h3>
+<ul>
+<li>snake_case를 작명 원칙으로 하였습니다.
+<ul>
+<li>이는 PostgreSQL이 대소문자를 구별하지 않기 때문입니다.</li>
+<li>데이터베이스와 무관하고 대문자를 사용하면 의미가 더 명확해지는 경우는 예외적으로 대문자를 사용하였습니다.</li>
+</ul></li>
+<li>엑셀등에서 읽어들인 테이블 data는 _raw 접미사를 사용하였습니다.</li>
+<li>마이닝에 의해 테이블 data의 레코드 수가 달라질 경우, 테이블의 명칭을 변경하였고, 전후에 갯수가 보존되었음을 검증하고자 노력했습니다.</li>
+</ul>
+</section>
+</section>
 <section id="ocs-자료" class="level2">
 <h2 class="anchored" data-anchor-id="ocs-자료">OCS 자료</h2>
 <section id="감마카메라실-판독소견" class="level3">
-<h3 class="anchored" data-anchor-id="감마카메라실-판독소견">감마카메라실 판독소견</h3>
-<p>I-131 치료정보를 구하는 방법은 몇 가지가 있겠지만 이 글에서는 판독소견조회메뉴에서 다운로드된 자료에서 추출하는 방식을 설명합니다.</p>
+<h3 class="anchored" data-anchor-id="감마카메라실-판독소견"><strong>감마카메라실 판독소견</strong></h3>
+<p>I-131 치료정보를 구하는 방법은 몇 가지가 있겠지만 저자는 판독소견조회메뉴에서 다운로드된 자료에서 추출하는 방식을 사용하였습니다.</p>
 <ul>
-<li><p>핵의학체내/검사결과관리/판독소견조회 메뉴에서 접수일자를 설정하고 검사실을 감마카메라실로 설정하여 진행합니다.</p></li>
+<li><p>핵의학체내/검사결과관리/판독소견조회 메뉴에서 접수일자를 설정하고 검사실을 감마카메라실로 설정하고 판독/미판독/전체 중 전체를 선택하여 진행합니다.</p></li>
 <li><p>이 때 접수일자기간을 너무 길게 설정하면 오류가 나므로 3개월에서 6개월 정도가 적당해 보입니다. 그렇지만 특정분기에는 검사 건수가 많아 3개월 단위로 다운로드 하는 것이 제일 안전합니다.</p></li>
 <li><p>조회가 완료되면 좌하측의 “조회내역출력”버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다. 페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다. csv 파일형식을 지원하지 않으므로 “Microsoft Excel 파일 (*.xls)로 진행하면 됩니다.</p></li>
 <li><p>보고서 형식 유지는 불필요하므로 선택을 해제하고 진행하면 됩니다.</p></li>
@@ -200,7 +232,7 @@ ul.task-list li input[type="checkbox"] {
 </ul></li>
 </ul>
 <section id="hd074-코드" class="level4">
-<h4 class="anchored" data-anchor-id="hd074-코드">HD074 코드</h4>
+<h4 class="anchored" data-anchor-id="hd074-코드"><strong>HD074 코드</strong></h4>
 <p>I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다. 최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는</p>
 <ul>
 <li><p>항목코드: <code>HD074</code></p></li>
@@ -218,13 +250,22 @@ ul.task-list li input[type="checkbox"] {
 <p>현재는 I-131 치료스캔은 금요일에만 시행되므로, 시행요일들을 조사해보면 아래와 같았습니다.</p>
 <div class="cell">
 <div class="cell-output-display">
-<table class="caption-top">
+<table class="caption-top table table-sm table-striped small">
 <thead>
 <tr class="header">
+<th style="text-align: left;">Var1</th>
 <th style="text-align: right;">Freq</th>
 </tr>
 </thead>
 <tbody>
+<tr class="odd">
+<td style="text-align: left;">금요일</td>
+<td style="text-align: right;">120</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">월요일</td>
+<td style="text-align: right;">5</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -253,7 +294,7 @@ Figure&nbsp;1
 </div>
 </section>
 <section id="d43018-코드" class="level4">
-<h4 class="anchored" data-anchor-id="d43018-코드">D43018 코드</h4>
+<h4 class="anchored" data-anchor-id="d43018-코드"><strong>D43018 코드</strong></h4>
 <ul>
 <li>항목코드 <code>D43018</code>은 항목명 <code>[131I] Whole Body Scan (Post Treatment)</code>입니다.</li>
 <li>선별해보면
@@ -523,17 +564,9 @@ Figure&nbsp;22
 </div>
 </div>
 </div>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>    PtID   PtName   진료과 진료과명 항목코드   항목명   실시일 실시요일 
-       0        0        0        0        0        0        0        0 
-  TxDate 
-       0 </code></pre>
-</div>
-</div>
 </section>
 <section id="d43019-코드" class="level4">
-<h4 class="anchored" data-anchor-id="d43019-코드">D43019 코드</h4>
+<h4 class="anchored" data-anchor-id="d43019-코드"><strong>D43019 코드</strong></h4>
 <ul>
 <li>항목코드 <code>D43019</code>은 항목명 <code>[131I] Whole Body Scan (5mCi)</code>입니다.</li>
 <li>선별해보면
@@ -551,132 +584,132 @@ Figure&nbsp;22
 </ul>
 <div class="cell">
 <div class="cell-output-display">
-<div id="fig-D43019-1" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-1" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-1.png" id="fig-D43019-1" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-1.png" id="fig-d43019-1" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;23
 </figcaption>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
-<div id="fig-D43019-2" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-2" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-2.png" id="fig-D43019-2" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-2.png" id="fig-d43019-2" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;24
 </figcaption>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
-<div id="fig-D43019-3" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-3" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-3.png" id="fig-D43019-3" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-3.png" id="fig-d43019-3" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;25
 </figcaption>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
-<div id="fig-D43019-4" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-4" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-4.png" id="fig-D43019-4" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-4.png" id="fig-d43019-4" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;26
 </figcaption>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
-<div id="fig-D43019-5" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-5" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-5.png" id="fig-D43019-5" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-5.png" id="fig-d43019-5" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;27
 </figcaption>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
-<div id="fig-D43019-6" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-6" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-6.png" id="fig-D43019-6" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-6.png" id="fig-d43019-6" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;28
 </figcaption>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
-<div id="fig-D43019-7" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-7" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-7.png" id="fig-D43019-7" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-7.png" id="fig-d43019-7" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;29
 </figcaption>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
-<div id="fig-D43019-8" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-8" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-8-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-8.png" id="fig-D43019-8" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-8-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-8.png" id="fig-d43019-8" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-8-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-8-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;30
 </figcaption>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
-<div id="fig-D43019-9" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-9" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-9-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-9.png" id="fig-D43019-9" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-9-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-9.png" id="fig-d43019-9" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-9-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-9-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;31
 </figcaption>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
-<div id="fig-D43019-10" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-10" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-10-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-10.png" id="fig-D43019-10" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-10-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-10.png" id="fig-d43019-10" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-10-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-10-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;32
 </figcaption>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
-<div id="fig-D43019-11" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<div id="fig-d43019-11" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-D43019-11-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-D43019-11.png" id="fig-D43019-11" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-d43019-11-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-d43019-11.png" id="fig-d43019-11" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-D43019-11-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-d43019-11-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;33
 </figcaption>
 </figure>
@@ -685,7 +718,7 @@ Figure&nbsp;33
 </div>
 </section>
 <section id="d43020-코드-x" class="level4">
-<h4 class="anchored" data-anchor-id="d43020-코드-x">D43020 코드 (x)</h4>
+<h4 class="anchored" data-anchor-id="d43020-코드-x"><strong>D43020 코드 (x)</strong></h4>
 <ul>
 <li>항목코드 <code>D43020</code>은 항목명 <code>[131I] Whole Body Scan (10mCi)</code>입니다.</li>
 <li>진단스캔만으로 사용되었다 생각되어 치료스캔에 포함시키지 않았습니다.</li>
@@ -693,22 +726,14 @@ Figure&nbsp;33
 </section>
 </section>
 <section id="tx_ocs로-통합" class="level3">
-<h3 class="anchored" data-anchor-id="tx_ocs로-통합">Tx_OCS로 통합</h3>
+<h3 class="anchored" data-anchor-id="tx_ocs로-통합">tx_ocs로 통합</h3>
 <ul>
-<li>D43019 자료는 이 코드의 최초사용일 2000-07-14로부터 D43018의 최초사용일인 2003-03-26까지만 통합에 사용하였습니다.</li>
+<li>D43019 자료는 이 코드의 최초사용일 2000-07-14로부터 D43018의 최초사용일인 2003-03-26까지만 통합에 사용하였습니다. 이는 725례에 해당합니다.</li>
 <li>D43018은 자료수 8976 그대로 통합하였고</li>
 <li>HD074도 자료수 120 그대로 통합하여</li>
 <li>총자료수 9821 로 진행하였습니다. (이는 각각의 합인 9821고 일치합니다.</li>
-<li>하지만 D43019의 2001년 그래프를 보면 치료건수가 3월부터 약 20건으로 급증하여 이 것이 국가방사선비상진료센터 내의 격리치료병실이 가동되기 시작한 때로 추정되며, 치료환자의 분석시작 시점으로 설정하는 것도 향후 고려됩니다.</li>
+<li>D43019의 2001년 그래프를 보면 치료건수가 3월부터 약 20건으로 급증하여 이 것이 국가방사선비상진료센터 내의 격리치료병실이 가동되기 시작한 때로 추정되며, 치료환자의 분석시작 시점으로 설정하는 것도 향후 고려됩니다.</li>
 </ul>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>    PtID   PtName   TxType   TxDate   TxDose TxNumber   referH     memo 
-       0        0        0        0        6        0     7389     9515 
-   refer outsideH 
-       0     9515 </code></pre>
-</div>
-</div>
 </section>
 </section>
 <section id="access-데이터베이스" class="level2">
@@ -719,197 +744,197 @@ Figure&nbsp;33
 <li>저자는 핵의학치료를 Access의 <code>I-131 치료 정보</code> 테이블에 2014년7월9일까지 입력했었습니다.
 <ul>
 <li>1988-04-26부터 2014-05-19까지</li>
-<li>9535회의 핵의학치료가 입력되어 있습니다.</li>
+<li>9535회의 핵의학치료가 입력되어 있습니다. (입력오류 검증 전)</li>
 </ul></li>
-<li>연도별로 실시일별 룃수(치료건수)는 아래의 그래프들과 같다.</li>
+<li>연도별로 실시일별 횟수(치료건수)는 아래의 그래프들과 같다.</li>
 </ul>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-4.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-5.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-5.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-6.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-6.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-7.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-7.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-8.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-8.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-9.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-9.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-10.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-10.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-11.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-11.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-12.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-12.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-13.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-13.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-14.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-14.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-15.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-15.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-16.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-16.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-17.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-17.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-18.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-18.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-19.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-19.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-20.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-20.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-21.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-21.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-22.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-22.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-23.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-23.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-24.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-24.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-25.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-25.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-26.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-26.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_Access_by_TxDate-27.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_access_by_tx_date-27.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -921,11 +946,11 @@ Figure&nbsp;33
 <section id="ocs와-access-병합" class="level3">
 <h3 class="anchored" data-anchor-id="ocs와-access-병합">OCS와 Access 병합</h3>
 <ul>
-<li>Access 데이터베이스의 9535 건과 OCS 다운로드된 9821 건을 단순히 병합하면 11654이지만</li>
-<li>중복된 7702 건을 제외하면</li>
-<li>총 치료횟수는 11654 건이었다.</li>
-<li>치료종류가 <code>I-131 MIBG</code> 와 <code>RIT</code> 는 61 였다.</li>
-<li>이를 제외한 Radioactive Iodine Therapy는 11593 건 이었다.</li>
+<li>Access 데이터베이스의 9535 건과 OCS 다운로드된 9821 건을 병합(full join)하면 12093 건이 되었습니다.</li>
+<li>위 병합은 등록번호가 치료날짜가 같은 것을 기준으로 하였지만 입력된 날짜가 다를 수도 있으므로 날짜가 7일 이내의 차이를 보이면 중복된 것으로 판단할 때 440 건의 중복건을 제외하면</li>
+<li>총 치료횟수는 11653 건이었습니다.</li>
+<li>치료종류가 <code>I-131 MIBG</code> 와 <code>RIT</code> 는 58 였고.</li>
+<li>이를 제외한 Radioactive Iodine Therapy는 11595 건 이었습니다.</li>
 </ul>
 </section>
 </section>
@@ -936,14 +961,14 @@ Figure&nbsp;33
 <li>비록 핵의학과 전체는 아니지만 single expert의 long-term follow up data이면서 치료 및 추적관찰 프로토콜에 일관성이 좋아 임상적인 의미를 도출할 수 있다고 생각한다.</li>
 </ul>
 <section id="tx_emr" class="level3">
-<h3 class="anchored" data-anchor-id="tx_emr">Tx_EMR</h3>
+<h3 class="anchored" data-anchor-id="tx_emr">tx_emr</h3>
 <ul>
-<li>엑셀파일로 다운로드하여 핵의학 치료기록만 추출하여 Tx_EMR로 구분하였다.</li>
+<li>엑셀파일로 다운로드하여 핵의학 치료기록만 추출하여 tx_emr로 구분하였다.</li>
 <li>요약하면
 <ul>
 <li>기간: 1984-03-27 ~ 2024-11-20</li>
-<li>치료횟수: 1822</li>
-<li>여기에는 치료용량을 확인할 수 없었던 례도 포함되어 있다.</li>
+<li>치료횟수: 1821</li>
+<li>여기에는 치료용량을 확인할 수 없었던 11례도 포함되어 있다.</li>
 </ul></li>
 <li>연도별로 실시일별 룃수(치료건수)는 아래의 그패프들과 같습니다.</li>
 </ul>
@@ -951,290 +976,319 @@ Figure&nbsp;33
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-4.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-5.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-5.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-6.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-6.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-7.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-7.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-8.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-8.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-9.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-9.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-10.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-10.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-11.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-11.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-12.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-12.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-13.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-13.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-14.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-14.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-15.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-15.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-16.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-16.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-17.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-17.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-18.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-18.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-19.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-19.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-20.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-20.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-21.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-21.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-22.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-22.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-23.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-23.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-24.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-24.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-25.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-25.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-26.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-26.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-27.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-27.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-28.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-28.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-29.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-29.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-30.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-30.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-31.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-31.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-32.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-32.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-33.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-33.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-34.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-34.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-35.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-35.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-36.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-36.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-37.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-37.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-38.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-38.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/Tx_EMR_plot-39.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/tx_emr_plot-39.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <ul>
-<li>1990년이전의 등록된 연간치료건수는 적으며 그나마, 1990년부터늬 등료건수 연 6회 이상임을 알 수 있습니다.</li>
+<li>1990년이전의 등록된 연간치료건수는 적으며 그나마, 1990년부터의 등료건수 연 6회 이상임을 알 수 있습니다.</li>
 </ul>
 </section>
-<section id="ocsaccessemr-치료병합" class="level3">
-<h3 class="anchored" data-anchor-id="ocsaccessemr-치료병합">OCS+Access+EMR 치료병합</h3>
-<p>EMR에 등록된 치료 1822 중 I-131 MIBG 치료 1 례를 제외한 나머지 1821 자료를 앞서의 OCS+Access 통합자료 11593에 다시 통합하였습니다.</p>
+</section>
+<section id="ocsaccessemr-치료병합" class="level2">
+<h2 class="anchored" data-anchor-id="ocsaccessemr-치료병합">OCS+Access+EMR 치료병합</h2>
+<p>EMR에 등록된 치료 1821 중 I-131 MIBG 치료 1 례를 제외한 나머지 1820 자료를 앞서의 OCS+Access 병합자료 11595에 다시 병합(full join)하였습니다.</p>
 <ul>
-<li>중복된 치료는 1666</li>
-<li>중복이 되지 않는 치료는 11748 로 중복이 되지 않은 치료자료로 진행하였다.</li>
+<li>병합된 자료수는 11837였으며</li>
+<li>위 병합은 pt_id와 tx_date가 같은 것으로 기준으로 하였으나 입력한 tx_date의 차이가 7일 이내면 날짜 입력 오류에 의한 중복으로 판단하였고,</li>
+<li>이러한 중복은 86 례가 있었고,</li>
+<li>중복이 되지 않도록 조정하였을 때, 치료는 11751 례 였습니다.</li>
 </ul>
+</section>
+<section id="분석대상군의-결정" class="level2">
+<h2 class="anchored" data-anchor-id="분석대상군의-결정">분석대상군의 결정</h2>
 <ul>
-<li>환자수로는 8578였다.</li>
+<li>OCS+Access+EMR 자료를 병합한 치료정보에서 환자정보를 추출해보면 환자수는 8580였습니다.</li>
+</ul>
+<section id="갑상선호르몬-처방통계" class="level3">
+<h3 class="anchored" data-anchor-id="갑상선호르몬-처방통계">갑상선호르몬 처방통계</h3>
+<ul>
+<li>약품별 처방통계로부터 다운로드하여 followup date 결정에 사용하였습니다.</li>
+<li>(다운로드 가능했던) 처방기간은 1999-08-02부터 2025-01-17였습니다.</li>
+</ul>
+</section>
+<section id="최소-추적관찰기간의-정의" class="level3">
+<h3 class="anchored" data-anchor-id="최소-추적관찰기간의-정의">최소 추적관찰기간의 정의</h3>
+<ul>
+<li>갑상선암 재발분석은 최소 추적관찰기간으로써 방사성요오드 치료 이후 재발여부에 대한 검사가 시행되는 것이 6~18개월인 점을 고려하여 2025-01-17로부터 18개월 이전의 치료기록까지만의 환자들 8415명을 대상으로 하였습니다.</li>
+</ul>
+</section>
+<section id="미처방-환자의-분류" class="level3">
+<h3 class="anchored" data-anchor-id="미처방-환자의-분류">미처방 환자의 분류</h3>
+<ul>
+<li>앞서의 환자정보에 처방기록을 병합(left join)하여 patient_prescription 정보를 만들었습니다.</li>
+<li>처방기록이 없는 환자의 분류
+<ul>
+<li>전체 미처방은 310건이었으며 처방기록은 1999-08-02부터이므로 치료기록이 이 이전인 사례는 174 건이었고, 이 이후의 사례는 136건 이었습니다.</li>
+<li>이전인 사례는 follow up loss로 이후인 사례는 수탁환자로 분류하였습니다.</li>
+</ul></li>
 </ul>
 
 

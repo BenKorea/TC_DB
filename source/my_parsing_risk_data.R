@@ -4,7 +4,7 @@
 my_splilt_lines_for_risk_data <- function(dt) {
   
   dt[, line_count := str_count(특기사항, "\n") + 1]
-  if (input_error_checking_mode == "Y") {
+  if (ERROR_CKECKING_MODE == "Y") {
     risk_data_line_count_errors <<- dt[line_count >= 4 | line_count == 1]
   }
   dt <- dt[line_count == 3 | line_count == 2]
@@ -15,7 +15,7 @@ my_splilt_lines_for_risk_data <- function(dt) {
   dt[, op_line := my_clean_string_edges(op_line)]
   dt[, stage_line := my_clean_string_edges(stage_line)]
   
-  if (input_error_checking_mode == "Y") {
+  if (ERROR_CKECKING_MODE == "Y") {
     risk_data_op_line_error <<- dt[!grepl("^[0-9]", dt$op_line), ]
   }
   dt <- dt[grepl("^[0-9]", dt$op_line), ]
@@ -43,12 +43,12 @@ my_parsing_cN_line <- function(dt) {
   dt$PETCT_Metastasis <- ifelse(grepl("=", dt$PETCT_Metastasis), sub("\\s*=.*", "", dt$PETCT_Metastasis), NA)
   
   dt[, cN_date := as.Date(cN_date, format="%Y-%m-%d", try = TRUE)]
-  if (input_error_checking_mode == "Y") {
+  if (ERROR_CKECKING_MODE == "Y") {
     risk_data_cN_date_error <<- dt[is.na(cN_date) & line_count==3]
   }
   dt <- dt[!(is.na(cN_date) & line_count==3)]
   
-  if (input_error_checking_mode == "Y") {
+  if (ERROR_CKECKING_MODE == "Y") {
     risk_data_cN_error <<- dt[!cN %in% c("cN0", "cN1a", "cN1b", "cN1", NA,"pN0", "pN1a", "pN1b", "pN1")]
   }
   dt <- dt[cN %in% c("cN0", "cN1a", "cN1b", "cN1", NA,"pN0", "pN1a", "pN1b", "pN1")]
@@ -77,7 +77,7 @@ my_parsing_op_line <- function(dt) {
   # op_date 열에서 "-??"가 존재하면 "-06"으로 대체
   dt$op_date <- ifelse(grepl("-\\?\\?", dt$op_date), gsub("-\\?\\?", "-06", dt$op_date), dt$op_date)
   dt[, op_date := as.Date(op_date, format="%Y-%m-%d", try = TRUE)]
-  if (input_error_checking_mode == "Y") {
+  if (ERROR_CKECKING_MODE == "Y") {
     risk_data_op_date_error <<- dt[is.na(op_date)]
   }
   dt <- dt[!is.na(op_date)]
@@ -95,7 +95,7 @@ my_parsing_op_line <- function(dt) {
   dt[, completion_operator := my_clean_string_edges(completion_operator)]
   
   dt[, completion_date := as.Date(completion_date, format="%Y-%m-%d", try = TRUE)]
-  if (input_error_checking_mode == "Y") {
+  if (ERROR_CKECKING_MODE == "Y") {
     risk_data_completion_date_error <<- dt[is.na(completion_date)&!is.na(completion_part)]
   }
   dt <- dt[!is.na(completion_date)|is.na(completion_part)]
