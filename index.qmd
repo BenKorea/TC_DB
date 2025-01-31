@@ -78,12 +78,9 @@ I-131 치료정보를 구하는 방법은 몇 가지가 있겠지만 저자는 �
 
 -   핵의학체내/검사결과관리/판독소견조회 메뉴에서 접수일자를 설정하고 검사실을 감마카메라실로 설정하고 판독/미판독/전체 중 전체를 선택하여 진행합니다.
 
--   이 때 접수일자기간을 너무 길게 설정하면 오류가 나므로 3개월에서 6개월 정도가 적당해 보입니다.
-    그렇지만 특정분기에는 검사 건수가 많아 3개월 단위로 다운로드 하는 것이 제일 안전합니다.
+-   이 때 접수일자기간을 너무 길게 설정하면 오류가 나므로 3개월에서 6개월 정도가 적당해 보입니다. 그렇지만 특정분기에는 검사 건수가 많아 3개월 단위로 다운로드 하는 것이 제일 안전합니다.
 
--   조회가 완료되면 좌하측의 "조회내역출력"버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다.
-    페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다.
-    csv 파일형식을 지원하지 않으므로 "Microsoft Excel 파일 (\*.xls)로 진행하면 됩니다.
+-   조회가 완료되면 좌하측의 "조회내역출력"버튼을 누르면 화면에 검사내역이 보이며 우측하부의 페이지가 계속증가하는 것이 보입니다. 페이지가 증가되다가 멈추면, 좌측상부의 저장버튼을 눌러 저장하면 됩니다. csv 파일형식을 지원하지 않으므로 "Microsoft Excel 파일 (\*.xls)로 진행하면 됩니다.
 
 -   보고서 형식 유지는 불필요하므로 선택을 해제하고 진행하면 됩니다.
 
@@ -114,15 +111,13 @@ hd074<-hd074_nm_except_monday
 
 #### **HD074 코드**
 
-I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다.
-최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는
+I-131 치료 후 시행되는 치료스캔의 코드는 시간 경과에 따라 변해왔습니다. 최근에는 치료스캔의 향상된 수가를 반영하기 위해서 본원에서는
 
 -   항목코드: `HD074`
 
 -   항목명: `체내섭취평가 전신스캔 방법`
 
-을 특정시점부터 사용하고 있습니다.
-그래서 감마카메라실 판독소견 다운로드된 자료 중에서 가장 최신 코드인 `HD074` 부터 우선 선별하고 검증을 진행하였습니다.
+을 특정시점부터 사용하고 있습니다. 그래서 감마카메라실 판독소견 다운로드된 자료 중에서 가장 최신 코드인 `HD074` 부터 우선 선별하고 검증을 진행하였습니다.
 
 -   기간: `r min(hd074_raw$실시일, na.rm=TRUE)` \~ `r max(hd074_raw$실시일, na.rm=TRUE)`
 
@@ -285,6 +280,7 @@ tx_access[pt_id == "00139889" & tx_number == 5, tx_date := as.IDate("2013-06-10"
 
 # 수탁병원기록이 없거나 "ㅡ"면 refer에 0을 파생
 tx_access[, refer := ifelse(is.na(refer_hosp) | refer_hosp == "ㅡ", 0, 1)]
+tx_access[, refer := as.integer(refer)]
 
 tx_access[, outside_hosp := ifelse(str_detect(memo, "병원"), TRUE, FALSE)]
 
@@ -483,7 +479,6 @@ summary(tx_access_ocs_emr)
 
 EMR에 등록된 치료 `r nrow(tx_emr)` 중 I-131 MIBG 치료 `r nrow(tx_emr_mibg)` 례를 제외한 나머지 `r nrow(tx_emr_rai)` 자료를 앞서의 OCS+Access 병합자료 `r nrow(tx_access_ocs_rai)`에 다시 병합(full join)하였습니다.
 
-
 ```{r tx_access_ocs_emr_duplicated, echo=FALSE, message=FALSE, warning=FALSE}
 
 tx_access_ocs_emr_check_duplicated <- tx_access_ocs_emr[, .(count = .N), by = .(pt_id, tx_date)]
@@ -515,10 +510,10 @@ tx_access_ocs_emr_duplicated <- tx_access_ocs_emr_by_pt_id_tx_date[remove != "N"
 tx_access_ocs_emr <- tx_access_ocs_emr_by_pt_id_tx_date[remove == "N"]
 ```
 
-- 병합된 자료수는 `r nrow(tx_access_ocs_emr_by_pt_id_tx_date)`였으며
-- 위 병합은 pt_id와 tx_date가 같은 것으로 기준으로 하였으나 입력한 tx_date의 차이가 7일 이내면 날짜 입력 오류에 의한 중복으로 판단하였고, 
-- 이러한 중복은 `r nrow(tx_access_ocs_emr_duplicated)` 례가 있었고,
-- 중복이 되지 않도록 조정하였을 때, 치료는 `r nrow(tx_access_ocs_emr)` 례 였습니다.
+-   병합된 자료수는 `r nrow(tx_access_ocs_emr_by_pt_id_tx_date)`였으며
+-   위 병합은 pt_id와 tx_date가 같은 것으로 기준으로 하였으나 입력한 tx_date의 차이가 7일 이내면 날짜 입력 오류에 의한 중복으로 판단하였고,
+-   이러한 중복은 `r nrow(tx_access_ocs_emr_duplicated)` 례가 있었고,
+-   중복이 되지 않도록 조정하였을 때, 치료는 `r nrow(tx_access_ocs_emr)` 례 였습니다.
 
 ```{r patient_tx_access_ocs_emr, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 
@@ -595,46 +590,131 @@ MAX_PRESCRIPTION_DATE <- max(prescription$prescription_date, na.rm=TRUE)
 
 ```{r patient_prescription, echo=FALSE, results='hide'}
 
-patient_prescription_raw <- merge(patient_tx_access_ocs_emr, prescription_by_pt_id, by = "pt_id", all.x = TRUE)
+patient_prescription_raw <- merge(
+  patient_tx_access_ocs_emr, 
+  prescription_by_pt_id, 
+  by = "pt_id", 
+  all.x = TRUE)
 
-patient_prescription <- patient_prescription_raw %>% filter(as.IDate(MAX_PRESCRIPTION_DATE - (365+182)) > last_tx)
+### 최소 추적관찰기간의 정의에 따른 분석대상군 선별
+FOLLOWUP_DAYS_CRITERIA <- 365 + 183
+patient_prescription <- patient_prescription_raw[
+  as.IDate(MAX_PRESCRIPTION_DATE - FOLLOWUP_DAYS_CRITERIA) > last_tx,
+]
 
+
+### follow up loss
+FOLLOWUP_LOSS_CRITERIA <- 400 + 365
+patient_prescription[, max_last_difference :=MAX_PRESCRIPTION_DATE - as.IDate(last_prescription)]
+patient_prescription[, fu_loss := fifelse(max_last_difference > FOLLOWUP_LOSS_CRITERIA,TRUE,FALSE)]
+colSums(is.na(patient_prescription))
+
+### 미처방 환자의 분류 
 patient_prescription_last_prescription_is_na <- patient_prescription[is.na(last_prescription),]
 
-patient_prescription$refer_binary <- ifelse(is.na(patient_prescription$last_prescription) & (patient_prescription$last_tx >= MIN_PRESCRIPTION_DATE), TRUE, FALSE)
+#### 미처방 - 수탁환자 
+# patient_prescription[, refer_binary := NA]
+patient_prescription[, refer_binary := fifelse(is.na(last_prescription) & (last_tx >= MIN_PRESCRIPTION_DATE), TRUE, FALSE)]
+colSums(is.na(patient_prescription))
 
-patient_prescription$followup_loss <- ifelse(is.na(patient_prescription$last_prescription) & (patient_prescription$last_tx < MIN_PRESCRIPTION_DATE), TRUE, FALSE)
+#### 미처방 - fu_loss
+patient_prescription[, fu_loss :=  fifelse(is.na(last_prescription) & (last_tx < MIN_PRESCRIPTION_DATE), TRUE, fu_loss)]
+colSums(is.na(patient_prescription))
+patient_prescription[is.na(fu_loss), fu_loss :=  FALSE]
+colSums(is.na(patient_prescription))
 
+### 치료와 처방 날짜의 차이 분류
+PRESCRIPTION_DAYS_CRITERIA <- 200
+patient_prescription[, px_tx_difference := as.IDate(last_prescription) - as.IDate(last_tx)]
+patient_prescription[
+  px_tx_difference < PRESCRIPTION_DAYS_CRITERIA &
+  tx_number < 4 &
+  max_last_difference > 400, 
+  refer_binary := TRUE
+]
 
+patient_refer <-patient_prescription[refer_binary==TRUE,]
+patient <-patient_prescription[refer_binary==FALSE,]
 
-summary(patient_prescription)
-
-PRESCRIPTION_DATE_REFER_CRITERIA <- 184
-
-
-
-# patient_prescription[, possible_refer := ifelse(
-#   is.na(last_prescription), NA, 
-#   ifelse(tx_number < 4 & last_prescription - last_tx < PRESCRIPTION_DATE_REFER_CRITERIA & MAX_PRESCRIPTION_DATE - last_tx < PRESCRIPTION_DATE_REFER_CRITERIA,
-#          TRUE,
-#          FALSE))]
-# 
-# patient_prescription_possible_refer <- patient_prescription[possible_refer == TRUE,]
-# patient_prescription_possible_no_refer <- patient_prescription[possible_refer == FALSE | is.na(possible_refer),]
-# 
-# summary(patient_prescription_possible_no_refer)
-# table(patient_prescription$possible_refer)
+FOLLOWUP_LOSS_RATE <- round(sum(patient$fu_loss)/nrow(patient)*100, digit=0)
 ```
 
+
+```{r patient_prescription_summary, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+
+### 탈락율을 위한 그래프
+
+my_plot_yearly_loss(patient)
+```
+
+```{r my_patient, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+
+my_patient <- patient[source=="EMR",]
+my_patient <- my_patient[, .(pt_id, pt_name, first_tx, last_tx, cumulative_dose, tx_number, fu_loss, last_prescription)]
+my_patient[,last_visit := last_prescription][,last_prescription := NULL]
+```
+
+
 ### 최소 추적관찰기간의 정의
-- 갑상선암 재발분석은 최소 추적관찰기간으로써 방사성요오드 치료 이후 재발여부에 대한 검사가 시행되는 것이 6~18개월인 점을 고려하여 `r MAX_PRESCRIPTION_DATE`로부터 18개월 이전의 치료기록까지만의 환자들  `r nrow(patient_prescription)`명을 대상으로 하였습니다.
-
-### 미처방 환자의 분류
-
 -   앞서의 환자정보에 처방기록을 병합(left join)하여 patient_prescription 정보를 만들었습니다.
+-   갑상선암 재발분석은 방사성요오드 치료 이후 재발여부에 대한 검사가 시행되는 것이 6\~18개월인 점을 고려하여 `r MAX_PRESCRIPTION_DATE`로부터 `r FOLLOWUP_DAYS_CRITERIA`일 (약 18개월) 이전의 치료기록까지의 환자들 `r nrow(patient_prescription)`명을 분석대상에 포함하였습니다.
+
+### follow up loss의 정의
+
+-   갑상선호르몬 처방기간이 400일까지 되고 있고, 일부 환자들에서 여분의 약을 이용하여 외래를 연기하는 것을 고려하여 다운로드된 가장 최근의 처방날짜 `r MAX_PRESCRIPTION_DATE`로부터 765일 이내에 처방기록이 없는 환자들을 follow up loss로 정의하였습니다.
+ 
+
+#### **미처방 환자의 분류**
 -   처방기록이 없는 환자의 분류
-    -   전체 미처방은 `r nrow(patient_prescription_last_prescription_is_na)`건이었으며 처방기록은 `r MIN_PRESCRIPTION_DATE`부터이므로 치료기록이 이 이전인 사례는 `r nrow(patient_prescription_last_prescription_is_na[last_tx<MIN_PRESCRIPTION_DATE,])` 건이었고, 이 이후의 사례는  `r nrow(patient_prescription_last_prescription_is_na[last_tx>=MIN_PRESCRIPTION_DATE,])`건 이었습니다.
+    -   전체 미처방은 `r nrow(patient_prescription_last_prescription_is_na)`건이었으며 처방기록은 `r MIN_PRESCRIPTION_DATE`부터이므로 치료기록이 이 이전인 사례는 `r nrow(patient_prescription_last_prescription_is_na[last_tx<MIN_PRESCRIPTION_DATE,])` 건이었고, 이 이후의 사례는 `r nrow(patient_prescription_last_prescription_is_na[last_tx>=MIN_PRESCRIPTION_DATE,])`건 이었습니다.
     -   이전인 사례는 follow up loss로 이후인 사례는 수탁환자로 분류하였습니다.
+    
+#### 수탁환자의 정의
+-   Access의 수탁치료 기록은 모든 환자들에게 기록이 있는 것이 아니고 일부환자는 수탁치료 이후 본원에서 추적관찰을 하기 때문에 Access 이외의 방법을 고안하였습니다.
+-   3회 이내의 치료이면서, 마지막 치료와 마지막 처방이 6개월 이내이면서, 최근 400일 이내에서 처방기록이 없는 환자를 수탁환자로 정의하였습니다.
+
+
+#### 최종적인 분류
+-   치료를 받았던 환자들은 총 `r nrow(patient_prescription)`명이었고
+-   위 정의에 따른 수탁환자는 `r nrow(patient_refer)`명이었이었으며 
+-   따라서 일차 분석대상환자군은 `r nrow(patient)`명이였습니다.
+    -   일차분석 대상화자군 중 follow up loss는 `r nrow(patient[fu_loss==TRUE,])`명으로
+    loss rate는 `r FOLLOWUP_LOSS_RATE`% 였습니다.
+    -   일차분석대상군 중 저자가 관심환자로 등록한 환자들은 `r nrow(my_patient)`명이었고, 이 환자군을 대상으로 생존분석을 시행하고자 하였습니다.
+
+
+```{r response_data, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+
+response_data <- my_parsing_response_data(emr)
+recurrence_data <- response_data[Response=="Structural", .(pt_id, pt_name, response_date)]
+recurrence_data[,recurrence_date := response_date][,c("pt_name","response_date") := NULL]
+patient_response<-merge(my_patient,recurrence_data,by="pt_id",all.x=TRUE)
+patient_response[,recur := fifelse(is.na(recurrence_date),FALSE,TRUE)]
+```
+
+```{r risk_data, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+
+risk_data <- my_parsing_risk_data(emr)
+risk_data[,pt_name := NULL]
+patient_risk<-merge(patient_response,risk_data,by="pt_id",all.x=TRUE)
+patient_risk_is_na <- patient_risk[is.na(등록일),]
+patient_risk <- patient_risk[!is.na(등록일),]
+patient_TT <- patient_risk[Thyroidectomy_Type=="TT"|Thyroidectomy_Type=="Lobectomy_Completion",]
+colSums(is.na(patient_risk))
+
+patient_risk_summary <- patient_TT[
+  , .(
+    pt_id, pt_name, first_tx, last_tx, cumulative_dose, tx_number, 
+    fu_loss, last_visit, Risk, op_date, cN, operator, 
+    Multiplicity, pT, pT_size, pT_subtype, ETE, gross_ETE, 
+    pN, ENE, M
+  )
+]
+
+summary(patient_risk_summary)
+
+```
+
 
 ```{r end, echo=FALSE}
 
