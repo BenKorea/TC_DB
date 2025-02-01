@@ -218,6 +218,9 @@ my_parsing_pT <- function(dt) {
     }
   }
   
+  dt <- dt[, pT_size := str_remove(pT_size, "cm")]
+  dt <- dt[, pT_size := as.numeric(pT_size)]
+  
   dt$ETE <- "N"
   dt$ETE[grepl("ETE\\+", dt$pT_detail)] <- "Y"
   
@@ -229,16 +232,14 @@ my_parsing_pT <- function(dt) {
   
 }
 
-my_parsing_pN <- function(dt) {  
+my_parsing_pN <- function(dt) {
   
   dt$pN <- tstrsplit(dt$pN_part, "\\(", fixed = FALSE, fill = NA, type.convert = TRUE)[[1]]
   dt$pN_detail <- tstrsplit(dt$pN_part, "\\(", fixed = FALSE, fill = NA, type.convert = TRUE)[[2]]
   
   dt$ENE <- "N"
-  dt$ETE[grepl("ETE\\+", dt$pT_detail)] <- "Y"
+  dt$ENE[grepl("ENE\\+", dt$pN_detail)] <- "Y"
   
-  dt$ETE <- "N"
-  dt$ENE[grepl("ENE+", dt$pN_detail)] <- "Y"
   return(dt)
   
 }
