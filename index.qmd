@@ -701,7 +701,8 @@ patient_response[,recur := fifelse(is.na(recurrence_date),FALSE,TRUE)]
 risk_data <- my_parsing_risk_data(emr)
 
 risk_data[, pT_size := str_extract(pT_detail, "\\d+(\\.\\d+)?\\s*cm")]
-
+risk_data <- risk_data[, pT_size := str_replace(pT_size, "\\s*cm", "")]
+risk_data <- risk_data[, pT_size := as.numeric(pT_size)]
 risk_data <- risk_data[!is.na(pT_size),]
 
 risk_data[,pt_name := NULL]
@@ -717,7 +718,7 @@ patient_TT <- patient_risk[Thyroidectomy_Type=="TT"|
                              Thyroidectomy_Type=="Lobectomy_Completion",]
 
 patient_risk_summary <- patient_TT[,
-  .(pt_id, pt_name, first_tx, fu_loss, last_visit, recurrence_date, recur, Risk, op_date, cN,   
+  .(pt_id, pt_name, first_tx, fu_loss, last_visit, recurrence_date, recur, Risk, op_date, cN,Thyroidectomy_Type, ND_Type,   
     operator, Multiplicity, highest_stage_histology, pT, pT_size, pT_subtype, ETE, gross_ETE, pN, 
     ENE, M)
 ]
@@ -728,7 +729,6 @@ patient_op_tx <- patient_risk_summary[first_tx>as.IDate(op_date)&Risk!="Unknown"
 # summary(patient_op_tx)
 
 ```
-
 
 ```{r birthday_data, echo=FALSE, warning=FALSE, message=FALSE}
 
@@ -742,13 +742,22 @@ px[, age := round((op_date-birthday)/365.24)]
 px[, time := ifelse(recur==TRUE, round((recurrence_date - op_date)/30.24), round((last_visit - op_date)/30.24))]
 ```
 
-
-
 ```{r finalizing}
 
 setnames(px, old="highest_stage_histology", "histology")
 setnames(px, old="pT_size", "size")
 setnames(px, old="pT_subtype", "subtype")
+setnames(px, old="operator", "surgeon")
+
+px[surgeon=="CIIJ", surgeon := "CIJ"]
+px[surgeon=="LGJ", surgeon := "LGH"]
+px[surgeon=="LNC", surgeon := "LMC"]
+px[surgeon %in% c("NOC", "NUC", "NWC", "KHA", "MNM", "KST"), surgeon := "GS"]
+px[str_detect(surgeon,"GS"), surgeon := "GS"]
+px[str_detect(surgeon,"cND"), surgeon := "LGH"]
+px[str_detect(surgeon,"sND"), surgeon := "CIJ"]
+px[is.na(surgeon), surgeon := "KCCH"]
+px[str_detect(surgeon,"@"), surgeon := "outside"]
 
 px_is_na_multiplicity <- px[is.na(Multiplicity),]
 px <- px[!is.na(Multiplicity),]
@@ -764,8 +773,7 @@ px[str_detect(subtype,"encap"), subtype := "encapsulated_angioinvasive"]
 px[str_detect(subtype,"oxiphilic"), subtype := "oncocytic"]
 
 px[is.na(M), M := "M0"]
-px[is.na(operator), operator := "KCCH"]
-px[str_detect(operator,"@"), operator := "outside"]
+
 px[str_detect(histology,"Mixed"), histology := "Mixed"]
 
 px_is_blank_pT <- px[pT=="",]
@@ -801,7 +809,7 @@ px[, recur := as.factor(recur)]
 
 px <-my_deidentify_pt_id(px, "pt_id")
 
-px <- px[,.(pt_id, age, sex, op_year, operator, Risk, histology, subtype, pT, size, Multiplicity, ETE, gross_ETE, pN, ENE, time, recur)]
+px <- px[,.(pt_id, age, sex, op_year, surgeon, Thyroidectomy_Type, ND_Type,Risk, histology, subtype, pT, size, Multiplicity, ETE, gross_ETE, pN, ENE, time, recur)]
 ```
 
 ```{r mytable}
@@ -812,7 +820,6 @@ mytable(px)
 ```{r}
 saveRDS(px,"C:/Projects/R441-Survival_Exercise/deidentified_data/rai_recur.rds")
 ```
-
 
 ```{r end, echo=FALSE}
 

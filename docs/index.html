@@ -23,6 +23,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -185,7 +219,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">January 31, 2025</p>
+      <p class="date-modified">February 2, 2025</p>
     </div>
   </div>
     
@@ -951,11 +985,11 @@ Figure&nbsp;33
 <section id="ocs와-access-병합" class="level3">
 <h3 class="anchored" data-anchor-id="ocs와-access-병합">OCS와 Access 병합</h3>
 <ul>
-<li>Access 데이터베이스의 9534 건과 OCS 다운로드된 9821 건을 병합(full join)하면 12093 건이 되었습니다.</li>
+<li>Access 데이터베이스의 9535 건과 OCS 다운로드된 9821 건을 병합(full join)하면 12093 건이 되었습니다.</li>
 <li>위 병합은 등록번호가 치료날짜가 같은 것을 기준으로 하였지만 입력된 날짜가 다를 수도 있으므로 날짜가 7일 이내의 차이를 보이면 중복된 것으로 판단할 때 440 건의 중복건을 제외하면</li>
 <li>총 치료횟수는 11653 건이었습니다.</li>
-<li>치료종류가 <code>I-131 MIBG</code> 와 <code>RIT</code> 는 61 였고.</li>
-<li>이를 제외한 Radioactive Iodine Therapy는 11592 건 이었습니다.</li>
+<li>치료종류가 <code>I-131 MIBG</code> 와 <code>RIT</code> 는 58 였고.</li>
+<li>이를 제외한 Radioactive Iodine Therapy는 11595 건 이었습니다.</li>
 </ul>
 </section>
 </section>
@@ -1259,18 +1293,18 @@ Figure&nbsp;33
 </section>
 <section id="ocsaccessemr-치료병합" class="level2">
 <h2 class="anchored" data-anchor-id="ocsaccessemr-치료병합">OCS+Access+EMR 치료병합</h2>
-<p>EMR에 등록된 치료 1821 중 I-131 MIBG 치료 1 례를 제외한 나머지 1820 자료를 앞서의 OCS+Access 병합자료 11592에 다시 병합(full join)하였습니다.</p>
+<p>EMR에 등록된 치료 1821 중 I-131 MIBG 치료 1 례를 제외한 나머지 1820 자료를 앞서의 OCS+Access 병합자료 11595에 다시 병합(full join)하였습니다.</p>
 <ul>
-<li>병합된 자료수는 11834였으며</li>
+<li>병합된 자료수는 11837였으며</li>
 <li>위 병합은 pt_id와 tx_date가 같은 것으로 기준으로 하였으나 입력한 tx_date의 차이가 7일 이내면 날짜 입력 오류에 의한 중복으로 판단하였고,</li>
 <li>이러한 중복은 86 례가 있었고,</li>
-<li>중복이 되지 않도록 조정하였을 때, 치료는 11748 례 였습니다.</li>
+<li>중복이 되지 않도록 조정하였을 때, 치료는 11751 례 였습니다.</li>
 </ul>
 </section>
 <section id="분석대상군의-결정" class="level2">
 <h2 class="anchored" data-anchor-id="분석대상군의-결정">분석대상군의 결정</h2>
 <ul>
-<li>OCS+Access+EMR 자료를 병합한 치료정보에서 환자정보를 추출해보면 환자수는 8578였습니다.</li>
+<li>OCS+Access+EMR 자료를 병합한 치료정보에서 환자정보를 추출해보면 환자수는 8580였습니다.</li>
 </ul>
 <section id="갑상선호르몬-처방통계" class="level3">
 <h3 class="anchored" data-anchor-id="갑상선호르몬-처방통계">갑상선호르몬 처방통계</h3>
@@ -1283,7 +1317,7 @@ Figure&nbsp;33
 <h3 class="anchored" data-anchor-id="최소-추적관찰기간의-정의">최소 추적관찰기간의 정의</h3>
 <ul>
 <li>앞서의 환자정보에 처방기록을 병합(left join)하여 patient_prescription 정보를 만들었습니다.</li>
-<li>갑상선암 재발분석은 방사성요오드 치료 이후 재발여부에 대한 검사가 시행되는 것이 6~18개월인 점을 고려하여 2025-01-17로부터 548일 (약 18개월) 이전의 치료기록까지의 환자들 8412명을 분석대상에 포함하였습니다.</li>
+<li>갑상선암 재발분석은 방사성요오드 치료 이후 재발여부에 대한 검사가 시행되는 것이 6~18개월인 점을 고려하여 2025-01-17로부터 548일 (약 18개월) 이전의 치료기록까지의 환자들 8414명을 분석대상에 포함하였습니다.</li>
 </ul>
 </section>
 <section id="follow-up-loss의-정의" class="level3">
@@ -1296,7 +1330,7 @@ Figure&nbsp;33
 <ul>
 <li>처방기록이 없는 환자의 분류
 <ul>
-<li>전체 미처방은 308건이었으며 처방기록은 1999-08-02부터이므로 치료기록이 이 이전인 사례는 174 건이었고, 이 이후의 사례는 134건 이었습니다.</li>
+<li>전체 미처방은 310건이었으며 처방기록은 1999-08-02부터이므로 치료기록이 이 이전인 사례는 174 건이었고, 이 이후의 사례는 136건 이었습니다.</li>
 <li>이전인 사례는 follow up loss로 이후인 사례는 수탁환자로 분류하였습니다.</li>
 </ul></li>
 </ul>
@@ -1311,14 +1345,177 @@ Figure&nbsp;33
 <section id="최종적인-분류" class="level4">
 <h4 class="anchored" data-anchor-id="최종적인-분류">최종적인 분류</h4>
 <ul>
-<li>치료를 받았던 환자들은 총 8412명이었고</li>
-<li>위 정의에 따른 수탁환자는 2985명이었이었으며</li>
+<li>치료를 받았던 환자들은 총 8414명이었고</li>
+<li>위 정의에 따른 수탁환자는 2987명이었이었으며</li>
 <li>따라서 일차 분석대상환자군은 5427명이였습니다.
 <ul>
 <li>일차분석 대상화자군 중 follow up loss는 2357명으로 loss rate는 43% 였습니다.</li>
 <li>일차분석대상군 중 저자가 관심환자로 등록한 환자들은 1333명이었고, 이 환자군을 대상으로 생존분석을 시행하고자 하였습니다.</li>
 </ul></li>
 </ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setnames</span>(px, <span class="at">old=</span><span class="st">"highest_stage_histology"</span>, <span class="st">"histology"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">setnames</span>(px, <span class="at">old=</span><span class="st">"pT_size"</span>, <span class="st">"size"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">setnames</span>(px, <span class="at">old=</span><span class="st">"pT_subtype"</span>, <span class="st">"subtype"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">setnames</span>(px, <span class="at">old=</span><span class="st">"operator"</span>, <span class="st">"surgeon"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>px[surgeon<span class="sc">==</span><span class="st">"CIIJ"</span>, surgeon <span class="sc">:</span><span class="er">=</span> <span class="st">"CIJ"</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>px[surgeon<span class="sc">==</span><span class="st">"LGJ"</span>, surgeon <span class="sc">:</span><span class="er">=</span> <span class="st">"LGH"</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>px[surgeon<span class="sc">==</span><span class="st">"LNC"</span>, surgeon <span class="sc">:</span><span class="er">=</span> <span class="st">"LMC"</span>]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>px[surgeon <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"NOC"</span>, <span class="st">"NUC"</span>, <span class="st">"NWC"</span>, <span class="st">"KHA"</span>, <span class="st">"MNM"</span>, <span class="st">"KST"</span>), surgeon <span class="sc">:</span><span class="er">=</span> <span class="st">"GS"</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(surgeon,<span class="st">"GS"</span>), surgeon <span class="sc">:</span><span class="er">=</span> <span class="st">"GS"</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(surgeon,<span class="st">"cND"</span>), surgeon <span class="sc">:</span><span class="er">=</span> <span class="st">"LGH"</span>]</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(surgeon,<span class="st">"sND"</span>), surgeon <span class="sc">:</span><span class="er">=</span> <span class="st">"CIJ"</span>]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">is.na</span>(surgeon), surgeon <span class="sc">:</span><span class="er">=</span> <span class="st">"KCCH"</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(surgeon,<span class="st">"@"</span>), surgeon <span class="sc">:</span><span class="er">=</span> <span class="st">"outside"</span>]</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>px_is_na_multiplicity <span class="ot">&lt;-</span> px[<span class="fu">is.na</span>(Multiplicity),]</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>px <span class="ot">&lt;-</span> px[<span class="sc">!</span><span class="fu">is.na</span>(Multiplicity),]</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>px_is_na_pN <span class="ot">&lt;-</span> px[<span class="fu">is.na</span>(pN),]</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>px <span class="ot">&lt;-</span> px[<span class="sc">!</span><span class="fu">is.na</span>(pN),]</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">is.na</span>(subtype), subtype <span class="sc">:</span><span class="er">=</span> <span class="st">"conventional"</span>]</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(subtype,<span class="st">"conver"</span>), subtype <span class="sc">:</span><span class="er">=</span> <span class="st">"conventional"</span>]</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(subtype,<span class="st">"mini"</span>), subtype <span class="sc">:</span><span class="er">=</span> <span class="st">"minimally_invasive"</span>]</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>px <span class="ot">&lt;-</span> px[<span class="sc">!</span><span class="fu">str_detect</span>(subtype, <span class="st">"unknown"</span>),]</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(subtype,<span class="st">"follicullar"</span>), subtype <span class="sc">:</span><span class="er">=</span> <span class="st">"follicular"</span>]</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(subtype,<span class="st">"diffuse"</span>), subtype <span class="sc">:</span><span class="er">=</span> <span class="st">"diffuse_sclerosing"</span>]</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(subtype,<span class="st">"encap"</span>), subtype <span class="sc">:</span><span class="er">=</span> <span class="st">"encapsulated_angioinvasive"</span>]</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(subtype,<span class="st">"oxiphilic"</span>), subtype <span class="sc">:</span><span class="er">=</span> <span class="st">"oncocytic"</span>]</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">is.na</span>(M), M <span class="sc">:</span><span class="er">=</span> <span class="st">"M0"</span>]</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(histology,<span class="st">"Mixed"</span>), histology <span class="sc">:</span><span class="er">=</span> <span class="st">"Mixed"</span>]</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>px_is_blank_pT <span class="ot">&lt;-</span> px[pT<span class="sc">==</span><span class="st">""</span>,]</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>px <span class="ot">&lt;-</span> px[<span class="sc">!</span>(pT<span class="sc">==</span><span class="st">""</span> <span class="sc">&amp;</span> <span class="fu">is.na</span>(size)),]</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>px[pT<span class="sc">==</span><span class="st">""</span>, pT <span class="sc">:</span><span class="er">=</span> <span class="st">"T1b"</span>]</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>px[pT<span class="sc">==</span><span class="st">"T1"</span> <span class="sc">&amp;</span> size <span class="sc">&lt;=</span><span class="dv">1</span>, pT <span class="sc">:</span><span class="er">=</span> <span class="st">"T1a"</span>]</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>px <span class="ot">&lt;-</span> px[<span class="sc">!</span>(pT<span class="sc">==</span><span class="st">"T3"</span> <span class="sc">&amp;</span> <span class="fu">is.na</span>(size)),]</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>px[pT<span class="sc">==</span><span class="st">"T1"</span> <span class="sc">&amp;</span> size <span class="sc">&gt;</span><span class="dv">1</span>, pT <span class="sc">:</span><span class="er">=</span> <span class="st">"T1b"</span>]</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(pT,<span class="st">"1a"</span>), pT <span class="sc">:</span><span class="er">=</span> <span class="st">"T1a"</span>]</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(pT,<span class="st">"1b|`b"</span>), pT <span class="sc">:</span><span class="er">=</span> <span class="st">"T1b"</span>]</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(pT,<span class="st">"3b"</span>), pT <span class="sc">:</span><span class="er">=</span> <span class="st">"T3b"</span>]</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>px[pT<span class="sc">==</span><span class="st">"T3"</span>, pT <span class="sc">:</span><span class="er">=</span> <span class="st">"T3a"</span>]</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>px_is_na_size <span class="ot">&lt;-</span> px[<span class="fu">is.na</span>(size),]</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(pN,<span class="st">"N0"</span>), pN <span class="sc">:</span><span class="er">=</span> <span class="st">"N0"</span>]</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(pN,<span class="st">"1a|Na1"</span>), pN <span class="sc">:</span><span class="er">=</span> <span class="st">"N1a"</span>]</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>px[<span class="fu">str_detect</span>(pN,<span class="st">"1b"</span>), pN <span class="sc">:</span><span class="er">=</span> <span class="st">"N1b"</span>]</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>px[pN<span class="sc">==</span><span class="st">"N1"</span><span class="sc">&amp;</span>size<span class="sc">==</span><span class="dv">1</span>, pN <span class="sc">:</span><span class="er">=</span> <span class="st">"N1b"</span>]</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>px[pN<span class="sc">==</span><span class="st">"N1"</span>, pN <span class="sc">:</span><span class="er">=</span> <span class="st">"N1a"</span>]</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>px <span class="ot">&lt;-</span> px[pN<span class="sc">!=</span><span class="st">"N?"</span>,]</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>px <span class="ot">&lt;-</span> px[M<span class="sc">!=</span><span class="st">"M1"</span>,]</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="co"># `+`가 존재하면 앞의 값만 추출, 아니면 그대로 유지</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>px[, subtype <span class="sc">:</span><span class="er">=</span> <span class="fu">fifelse</span>(<span class="fu">str_detect</span>(subtype, <span class="st">"</span><span class="sc">\\</span><span class="st">+"</span>), </span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">str_extract</span>(subtype, <span class="st">"^[^+]+"</span>), </span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>                         subtype)]</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>px[, op_year <span class="sc">:</span><span class="er">=</span> <span class="fu">year</span>(op_date)]</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>px[, recur <span class="sc">:</span><span class="er">=</span> <span class="fu">as.factor</span>(recur)]</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>px <span class="ot">&lt;-</span><span class="fu">my_deidentify_pt_id</span>(px, <span class="st">"pt_id"</span>)</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>px <span class="ot">&lt;-</span> px[,.(pt_id, age, sex, op_year, surgeon, Thyroidectomy_Type, ND_Type,Risk, histology, subtype, pT, size, Multiplicity, ETE, gross_ETE, pN, ENE, time, recur)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mytable</span>(px)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+                         Descriptive Statistics                         
+————————————————————————————————————————————————————————————————————————— 
+                                  Mean ± SD or %       N   Missing (%)
+————————————————————————————————————————————————————————————————————————— 
+  pt_id                           unique values  1179  1180  0  ( 0.0%)
+   age                                    47.8 ± 11.1  1180  0  ( 0.0%)
+  sex                                                  1180  0  ( 0.0%)
+    - F                                  934  (79.2%)                  
+    - M                                  246  (20.8%)                  
+   op_year                               2011.9 ± 5.5  1180  0  ( 0.0%)
+  surgeon                                              1180  0  ( 0.0%)
+    - CIJ                                  73  (6.2%)                  
+    - GS                                   22  (1.9%)                  
+    - KCCH                                 63  (5.3%)                  
+    - LBC                                 110  (9.3%)                  
+    - LGH                                476  (40.3%)                  
+    - LMC                                234  (19.8%)                  
+    - LYS                                  30  (2.5%)                  
+    - OKK                                   6  (0.5%)                  
+    - outside                              86  (7.3%)                  
+    - SYS                                  80  (6.8%)                  
+  Thyroidectomy_Type                                   1180  0  ( 0.0%)
+    - Lobectomy_Completion                 67  (5.7%)                  
+    - TT                                1113  (94.3%)                  
+  ND_Type                                              1180  0  ( 0.0%)
+    - CND                                878  (74.4%)                  
+    - FND                                  11  (0.9%)                  
+    - mRND                                  3  (0.3%)                  
+    - ND                                   86  (7.3%)                  
+    - Not Done                             41  (3.5%)                  
+    - Picking                               8  (0.7%)                  
+    - SND                                153  (13.0%)                  
+  Risk                                                 1180  0  ( 0.0%)
+    - High                               212  (18.0%)                  
+    - Intermediate                       578  (49.0%)                  
+    - Low                                390  (33.1%)                  
+  histology                                            1180  0  ( 0.0%)
+    - FTC                                  24  (2.0%)                  
+    - HTC                                   3  (0.3%)                  
+    - Mixed                                 1  (0.1%)                  
+    - PDTC                                  2  (0.2%)                  
+    - PTC                               1150  (97.5%)                  
+  subtype                                              1180  0  ( 0.0%)
+    - clear_cell                            1  (0.1%)                  
+    - conventional                      1061  (89.9%)                  
+    - cribriform-morular                    1  (0.1%)                  
+    - diffuse_sclerosing                    8  (0.7%)                  
+    - encapsulated_angioinvasive            4  (0.3%)                  
+    - follicular                           60  (5.1%)                  
+    - minimally_invasive                   20  (1.7%)                  
+    - oncocytic                             3  (0.3%)                  
+    - poorly_differentiated                 1  (0.1%)                  
+    - solid                                 3  (0.3%)                  
+    - tall_cell                            17  (1.4%)                  
+    - widely_invasive                       1  (0.1%)                  
+  pT                                                   1180  0  ( 0.0%)
+    - T1a                                499  (42.3%)                  
+    - T1b                                415  (35.2%)                  
+    - T2                                 134  (11.4%)                  
+    - T3a                                  30  (2.5%)                  
+    - T3b                                  65  (5.5%)                  
+    - T4a                                  36  (3.1%)                  
+    - T4b                                   1  (0.1%)                  
+   size                                     1.4 ± 1.0  1180  0  ( 0.0%)
+  Multiplicity                                         1180  0  ( 0.0%)
+    - Multiple                           614  (52.0%)                  
+    - Single                             566  (48.0%)                  
+  ETE                                                  1180  0  ( 0.0%)
+    - N                                  377  (31.9%)                  
+    - Y                                  803  (68.1%)                  
+  gross_ETE                                            1180  0  ( 0.0%)
+    - N                                 1084  (91.9%)                  
+    - Y                                    96  (8.1%)                  
+  pN                                                   1180  0  ( 0.0%)
+    - N0                                 344  (29.2%)                  
+    - N1a                                538  (45.6%)                  
+    - N1b                                236  (20.0%)                  
+    - Nx                                   62  (5.3%)                  
+  ENE                                                  1180  0  ( 0.0%)
+    - N                                 1049  (88.9%)                  
+    - Y                                  131  (11.1%)                  
+   time                                  137.1 ± 68.3  1180  0  ( 0.0%)
+  recur                                                1180  0  ( 0.0%)
+    - FALSE                             1097  (93.0%)                  
+    - TRUE                                 83  (7.0%)                  
+————————————————————————————————————————————————————————————————————————— </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(px,<span class="st">"C:/Projects/R441-Survival_Exercise/deidentified_data/rai_recur.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
 </section>
