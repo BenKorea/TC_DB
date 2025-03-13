@@ -3,7 +3,7 @@ title: I-131 치료 데이터베이스 만들기
 author: BenKorea
 description: "데이터베이스를 만드는 과정 기록"
 date: "2025-01-11"
-date-modified: "`r Sys.Date()`"
+date-modified: last-modified
 toc-depth: 4
 ---
 
@@ -18,7 +18,7 @@ toc-depth: 4
 -   snake_case를 작명 원칙으로 하였습니다.
     -   이는 PostgreSQL이 대소문자를 구별하지 않기 때문입니다.
     -   데이터베이스와 무관하고 대문자를 사용하면 의미가 더 명확해지는 경우는 예외적으로 대문자를 사용하였습니다.
--   엑셀등에서 읽어들인 테이블 data는 \_raw 접미사를 사용하였습니다.
+-   엑셀등에서 읽어들인 테이블 data는 `_raw` 접미사를 사용하였습니다.
 -   마이닝에 의해 테이블 data의 레코드 수가 달라질 경우, 테이블의 명칭을 변경하였고, 전후에 갯수가 보존되었음을 검증하고자 노력했습니다.
 
 ```{r MODE, echo=FALSE, message=FALSE}
@@ -734,7 +734,7 @@ px_is_na_birthday <- px[is.na(birthday),]
 px <- px[!is.na(birthday),]
 px[, op_date := as.IDate(op_date)]
 px[, age := round((op_date-birthday)/365.24)]
-px[, time := ifelse(recur==TRUE, round((recurrence_date - op_date)/30.24), round((last_visit - op_date)/30.24))]
+px[, time := ifelse(recur == TRUE, recurrence_date - op_date, last_visit - op_date)]
 ```
 
 ```{r finalizing, echo=FALSE, warning=FALSE, message=FALSE}
@@ -813,7 +813,7 @@ mytable(px)
 ```
 
 ```{r}
-saveRDS(px,"C:/Projects/R441-Survival_Exercise/deidentified_data/rai_recur.rds")
+saveRDS(px,"C:/Projects/R443-Survival_Exercise/deidentified_data/rai_recur.rds")
 ```
 
 ```{r end, echo=FALSE}
